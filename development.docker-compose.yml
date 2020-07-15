@@ -5,11 +5,21 @@ services:
       context: .
       dockerfile: development.Dockerfile
     environment: 
-      - NODE_ENV=development
-      - BOT_TOKEN=${BOT_TOKEN}
-      - WEBHOOK_HOST=${WEBHOOK_HOST}
-      - WEBHOOK_PORT=${WEBHOOK_PORT}
-      - WEBHOOK_PATH=${WEBHOOK_PATH}
-      - IS_WEBHOOK_ENABLED=false
+      NODE_ENV: development
+      BOT_TOKEN: ${BOT_TOKEN}
+      WEBHOOK_HOST: ${WEBHOOK_HOST}
+      WEBHOOK_PORT: ${WEBHOOK_PORT}
+      WEBHOOK_PATH: ${WEBHOOK_PATH}
+      IS_WEBHOOK_ENABLED: false
+      DB_URL: postgres://dumpach:test_password@postgres/dumpach
     volumes:
       - ./src:/app/src
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ranks-bot
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: ranks_bot
+    ports:
+      - 5432:5432
