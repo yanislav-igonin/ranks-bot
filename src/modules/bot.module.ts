@@ -22,7 +22,12 @@ class BotModule {
     });
 
     bot.start(StartController);
-    bot.on('text', TextController);
+    bot.command('add', TextController);
+    bot.command('update', TextController);
+    bot.command('delete', TextController);
+    bot.command('list', TextController);
+    bot.command('assign', TextController);
+    bot.command('unassign', TextController);
 
     if (TelegramConfig.webhook.isEnabled) {
       let host: string;
