@@ -3,7 +3,15 @@ import * as ngrok from 'ngrok';
 
 import * as Config from '../config';
 import { LoggerModule } from './logger.module';
-import { StartController, TextController } from '../controllers';
+import {
+  StartController,
+  AddController,
+  AssignController,
+  DeleteController,
+  ListController,
+  UnassignController,
+  UpdateController,
+} from '../controllers';
 
 class BotModule {
   private config: typeof Config;
@@ -22,12 +30,12 @@ class BotModule {
     });
 
     bot.start(StartController);
-    bot.command('add', TextController);
-    bot.command('update', TextController);
-    bot.command('delete', TextController);
-    bot.command('list', TextController);
-    bot.command('assign', TextController);
-    bot.command('unassign', TextController);
+    bot.command('add', AddController);
+    bot.command('assign', AssignController);
+    bot.command('delete', DeleteController);
+    bot.command('list', ListController);
+    bot.command('unassign', UnassignController);
+    bot.command('update', UpdateController);
 
     if (TelegramConfig.webhook.isEnabled) {
       let host: string;
