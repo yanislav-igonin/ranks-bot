@@ -11,7 +11,7 @@ services:
       WEBHOOK_PORT: ${WEBHOOK_PORT}
       WEBHOOK_PATH: ${WEBHOOK_PATH}
       IS_WEBHOOK_ENABLED: false
-      DB_URL: postgres://dumpach:test_password@postgres/dumpach
+      DB_URL: postgres://ranks-bot:test_password@postgres/ranks_bot
     volumes:
       - ./src:/app/src
 
