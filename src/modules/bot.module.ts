@@ -44,8 +44,6 @@ class BotModule {
       await bot.telegram.deleteWebhook();
       bot.startPolling();
     }
-
-    LoggerModule.info('bot - online');
   }
 }
 
