@@ -1,7 +1,17 @@
 import { StartController } from './start.controller';
-import { TextController } from './text.controller';
+import { AddController } from './add.controller';
+import { AssignController } from './assign.controller';
+import { DeleteController } from './delete.controller';
+import { ListController } from './list.controller';
+import { UnassignController } from './unassign.controller';
+import { UpdateController } from './update.controller';
 
 export {
   StartController,
-  TextController,
+  AddController,
+  AssignController,
+  DeleteController,
+  ListController,
+  UnassignController,
+  UpdateController,
 };
