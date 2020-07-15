@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { AppConfig } from './config';
 import { LoggerModule, BotModule, DbModule } from './modules';
 
