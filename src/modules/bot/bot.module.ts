@@ -8,6 +8,7 @@ import {
   AddController,
   AssignController,
   DeleteController,
+  HelpController,
   ListController,
   UnassignController,
   UpdateController,
@@ -35,12 +36,13 @@ class BotModule {
     bot.use(AuthMiddleware);
 
     bot.start(StartController);
-    bot.command('add', AddController);
-    bot.command('assign', AssignController);
-    bot.command('delete', DeleteController);
-    bot.command('list', ListController);
-    bot.command('unassign', UnassignController);
-    bot.command('update', UpdateController);
+    bot.command(['add', 'add@RanksBot'], AddController);
+    bot.command(['assign', 'assign@RanksBot'], AssignController);
+    bot.command(['delete', 'delete@RanksBot'], DeleteController);
+    bot.command(['list', 'list@RanksBot'], ListController);
+    bot.command(['unassign', 'unassign@RanksBot'], UnassignController);
+    bot.command(['update', 'update@RanksBot'], UpdateController);
+    bot.command(['help', 'help@RanksBot'], HelpController);
 
     if (TelegramConfig.webhook.isEnabled) {
       let host: string;
