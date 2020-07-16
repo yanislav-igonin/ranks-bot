@@ -1,6 +1,7 @@
-import * as userRepository from './rank';
+import { RankDao } from './rank.dao';
+import { UserDao } from './user.dao';
 
 export {
-  fileRepository,
-  userRepository,
+  RankDao,
+  UserDao,
 };
