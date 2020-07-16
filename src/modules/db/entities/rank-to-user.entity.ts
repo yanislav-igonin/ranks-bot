@@ -15,6 +15,9 @@ export class RankToUserEntity {
   @Column({ default: '' })
   public comment!: string;
 
+  @Column({ default: 1 })
+  public count!: number;
+
   @CreateDateColumn({ type: 'timestamptz' })
   public createdAt!: Date;
 
