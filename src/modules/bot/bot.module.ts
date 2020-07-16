@@ -1,8 +1,8 @@
 import Telegraf from 'telegraf';
 import * as ngrok from 'ngrok';
 
-import * as Config from '../config';
-import { LoggerModule } from './logger.module';
+import * as Config from '../../config';
+import { LoggerModule } from '../logger.module';
 import {
   StartController,
   AddController,
@@ -11,7 +11,10 @@ import {
   ListController,
   UnassignController,
   UpdateController,
-} from '../controllers';
+} from '../../controllers';
+
+import { TextContext } from './interfaces/index';
+import { AuthMiddleware } from '../../middlewares';
 
 class BotModule {
   private config: typeof Config;
@@ -23,11 +26,13 @@ class BotModule {
   public async launch(): Promise<void> {
     const { AppConfig, TelegramConfig } = this.config;
 
-    const bot = new Telegraf(TelegramConfig.token);
+    const bot = new Telegraf<TextContext>(TelegramConfig.token);
 
     bot.catch((err: Error): void => {
       LoggerModule.error(`ERROR: ${err}\n`);
     });
+
+    bot.use(AuthMiddleware);
 
     bot.start(StartController);
     bot.command('add', AddController);
