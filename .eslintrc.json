@@ -10,7 +10,8 @@
       {
         "code": 85,
         "tabWidth": 2,
-        "ignoreComments": true
+        "ignoreComments": true,
+        "ignoreTemplateLiterals": true
       }
     ],
     "arrow-parens": [
