@@ -14,7 +14,6 @@ export class ListService {
   }
 
   public async handle(): Promise<ListResponse> {
-    // const response = new ListResponse(this.data);
     const ranksToUsers = await this.dao.rankToUser.getRanksToUsers();
 
     const usersRanks = ranksToUsers
