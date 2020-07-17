@@ -19,7 +19,8 @@
       "always"
     ],
     "implicit-arrow-linebreak": 0,
-    "import/prefer-default-export": "off"
+    "import/prefer-default-export": "off",
+    "import/no-extraneous-dependencies": "off"
   },
   "parserOptions": {
     "ecmaVersion": 2018,
