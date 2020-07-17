@@ -10,9 +10,9 @@ export class RankToUserDao {
   }
 
   public async getRanksToUsers(): Promise<RankToUserEntity[]> {
-    const ranks = await this.repository.find({
-      relations: ['users', 'ranks'],
+    const ranksToUsers = await this.repository.find({
+      relations: ['user', 'rank'],
     });
-    return ranks;
+    return ranksToUsers;
   }
 }
