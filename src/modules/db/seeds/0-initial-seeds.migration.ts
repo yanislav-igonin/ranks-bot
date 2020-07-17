@@ -111,7 +111,6 @@ export class SeedInitialData1594905684546 implements MigrationInterface {
       { id: 86, title: 'Шлепок' },
       { id: 87, title: 'Жижа' },
       { id: 88, title: 'Рот бомжа' },
-      { id: 89, title: 'Лежалый' },
     ];
 
     this.ranksToUsers = [
