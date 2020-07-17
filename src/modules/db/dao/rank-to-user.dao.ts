@@ -2,7 +2,7 @@ import { Repository } from 'typeorm';
 import { DbModule } from '../db.module';
 import { RankToUserEntity } from '../entities';
 
-export class RankDao {
+export class RankToUserDao {
   private repository: Repository<RankToUserEntity>;
 
   public constructor() {
