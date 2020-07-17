@@ -13,4 +13,9 @@ export class RankDao {
     const ranks = await this.repository.find();
     return ranks;
   }
+
+  public async createRank({ title }: {title: string}): Promise<RankEntity> {
+    const rank = await this.repository.save({ title });
+    return rank;
+  }
 }
