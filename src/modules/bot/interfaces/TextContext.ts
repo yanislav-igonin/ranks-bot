@@ -1,4 +1,4 @@
-import { MessageEntity } from 'telegraf/typings/telegram-types';
+import { MessageEntity } from 'telegram-typings';
 
 import {
   UserMessage,
