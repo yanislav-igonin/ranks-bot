@@ -43,6 +43,7 @@ class BotModule {
     bot.command(['unassign', 'unassign@RanksBot'], UnassignController);
     bot.command(['update', 'update@RanksBot'], UpdateController);
     bot.command(['help', 'help@RanksBot'], HelpController);
+    bot.hears('да', async (ctx): Promise<void> => { await ctx.reply('пизда'); });
 
     if (TelegramConfig.webhook.isEnabled) {
       let host: string;
