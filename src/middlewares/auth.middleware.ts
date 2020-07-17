@@ -1,4 +1,4 @@
-import { Context, Middleware } from 'telegraf';
+import { Middleware } from 'telegraf';
 import { AuthConfig } from '../config';
 import { TextContext } from '../modules/bot/interfaces';
 
