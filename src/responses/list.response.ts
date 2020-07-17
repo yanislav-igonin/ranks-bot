@@ -33,7 +33,8 @@ export class ListResponse {
       }
 
       this.text = this.text.concat('\n');
-      this.text = this.text.replace('@toPlay', 'Розыгрыш:');
     }
+
+    this.text = this.text.replace('@toPlay', 'Розыгрыш:');
   }
 }
