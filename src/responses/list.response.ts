@@ -1,11 +1,12 @@
+export interface ListResponseRankData {
+  rankId: number;
+  rankTitle: string;
+  comment: string;
+  count: number;
+}
+
 export interface ListResponseData {
-  [K: string]: {
-    rankId: number;
-    rankTitle: string;
-    comment: string;
-    count:
-    number;
-  }[];
+  [K: string]: ListResponseRankData[];
 }
 
 export class ListResponse {
@@ -32,6 +33,7 @@ export class ListResponse {
       }
 
       this.text = this.text.concat('\n');
+      this.text = this.text.replace('@toPlay', 'Розыгрыш:');
     }
   }
 }

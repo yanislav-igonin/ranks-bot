@@ -1,13 +1,13 @@
 import { ListResponse } from '../responses';
-import { ListResponseData } from '../responses/list.response';
-import { RankToUserDao } from '../modules/db/dao';
+import { ListResponseData, ListResponseRankData } from '../responses/list.response';
+import { RankToUserDao, RankDao } from '../modules/db/dao';
 
 interface ListServiceData {
-  dao: { rankToUser: RankToUserDao };
+  dao: { rankToUser: RankToUserDao; rank: RankDao };
 }
 
 export class ListService {
-  private dao: { rankToUser: RankToUserDao};
+  private dao: { rankToUser: RankToUserDao; rank: RankDao };
 
   public constructor(data: ListServiceData) {
     this.dao = data.dao;
@@ -15,6 +15,10 @@ export class ListService {
 
   public async handle(): Promise<ListResponse> {
     const ranksToUsers = await this.dao.rankToUser.getRanksToUsers();
+    const assignedRanksIds = ranksToUsers.map((rtu): number => rtu.rank.id);
+    const allRanks = await this.dao.rank.getRanks();
+    const unassignedRanks = allRanks
+      .filter((rank): boolean => !assignedRanksIds.includes(rank.id));
 
     const usersRanks = ranksToUsers
       .reduce((acc: ListResponseData, rtu): ListResponseData => {
@@ -31,6 +35,13 @@ export class ListService {
 
         return acc;
       }, {});
+
+    usersRanks.toPlay = unassignedRanks.map((rank): ListResponseRankData => ({
+      rankId: rank.id,
+      rankTitle: rank.title,
+      comment: '',
+      count: 0,
+    }));
 
     const response = new ListResponse(usersRanks);
 
