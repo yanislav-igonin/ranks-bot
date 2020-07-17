@@ -1,4 +1,3 @@
-import { report } from 'process';
 import { HelpResponse } from '../responses';
 
 export class HelpService {
