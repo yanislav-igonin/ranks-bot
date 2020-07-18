@@ -25,7 +25,7 @@ export class AddService {
 
     await this.dao.changelog.createChangelog({
       userId: this.user.id,
-      type: 'update',
+      type: 'insert',
       table: 'ranks',
       objectId: rank.id,
     });
