@@ -3,7 +3,7 @@ import { HelpResponse } from '../responses';
 export class HelpService {
   private data: { text: string};
 
-  public constructor(data: { text: string}) {
+  public constructor(data: { text: string }) {
     this.data = data;
   }
 
