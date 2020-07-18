@@ -4,7 +4,7 @@ import { ChangelogEntity } from '../entities';
 
 interface CreateChangelogData {
   userId: number;
-  table: string;
+  table: 'ranks' | 'ranks_to_users';
   type: 'update' | 'insert' | 'delete';
   objectId: number;
   previousValue?: string;
