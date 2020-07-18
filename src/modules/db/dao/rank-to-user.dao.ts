@@ -15,4 +15,24 @@ export class RankToUserDao {
     });
     return ranksToUsers;
   }
+
+  public async assignRankToUser(
+    {
+      userId,
+      rankId,
+      comment,
+    }: {
+      userId: number;
+      rankId: number;
+      comment?: string;
+    },
+  ): Promise<RankToUserEntity> {
+    const rankToUser = await this.repository.save({
+      user: { id: userId },
+      rank: { id: rankId },
+      comment,
+    });
+
+    return rankToUser;
+  }
 }
