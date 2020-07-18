@@ -30,4 +30,10 @@ export class RankDao {
   public async deleteRank({ id }: { id: number }): Promise<void> {
     await this.repository.delete({ id });
   }
+
+  public async updateRank(
+    { id, title }: { id: number; title: string },
+  ): Promise<void> {
+    await this.repository.update(id, { title });
+  }
 }
