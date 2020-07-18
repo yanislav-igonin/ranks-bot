@@ -25,6 +25,10 @@ export class UpdateService {
       return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
     }
 
+    if (this.rank.nextTitle === '') {
+      return { text: 'Звание-то введи, болван' };
+    }
+
     const rank = await this.dao.rank.getRank({ id: this.rank.id });
 
     if (rank === null) {
