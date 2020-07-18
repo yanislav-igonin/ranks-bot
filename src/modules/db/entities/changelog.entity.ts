@@ -17,7 +17,7 @@ export class ChangelogEntity {
   public type!: string;
 
   @Column()
-  public tableName!: string;
+  public table!: string;
 
   @Column()
   public objectId!: number;
