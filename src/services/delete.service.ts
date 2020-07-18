@@ -21,6 +21,10 @@ export class DeleteService {
   }
 
   public async handle(): Promise<DeleteResponse> {
+    if (Number.isNaN(this.rank.id) === true) {
+      return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
+    }
+
     const rank = await this.dao.rank.getRank({ id: this.rank.id });
 
     if (rank === null) {
