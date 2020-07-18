@@ -22,6 +22,12 @@ export class ChangelogEntity {
   @Column()
   public objectId!: number;
 
+  @Column({ default: '' })
+  public previousValue!: string;
+
+  @Column({ default: '' })
+  public currentValue!: string;
+
   @ManyToOne((type) => UserEntity, (user) => user.changelogs)
   public user!: UserEntity;
 }
