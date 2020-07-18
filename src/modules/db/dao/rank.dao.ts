@@ -14,8 +14,12 @@ export class RankDao {
     return ranks;
   }
 
-  public async createRank({ title }: {title: string}): Promise<RankEntity> {
+  public async createRank({ title }: { title: string }): Promise<RankEntity> {
     const rank = await this.repository.save({ title });
     return rank;
+  }
+
+  public async deleteRank({ id }: { id: number }): Promise<void> {
+    await this.repository.delete({ id });
   }
 }
