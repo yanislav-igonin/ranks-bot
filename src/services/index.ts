@@ -3,6 +3,7 @@ import { ListService } from './list.service';
 import { AddService } from './add.service';
 import { DeleteService } from './delete.service';
 import { UpdateService } from './update.service';
+import { AssignService } from './assign.service';
 
 export {
   HelpService,
@@ -10,4 +11,5 @@ export {
   AddService,
   DeleteService,
   UpdateService,
+  AssignService,
 };
