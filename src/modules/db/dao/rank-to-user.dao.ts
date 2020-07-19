@@ -16,6 +16,19 @@ export class RankToUserDao {
     return ranksToUsers;
   }
 
+  public async getRankToUser(
+    { rankId, userId }: {rankId: number; userId: number},
+  ): Promise<RankToUserEntity | null> {
+    const rankToUser = await this.repository.findOne({
+      id: rankId,
+      user: { id: userId },
+    });
+
+    if (rankToUser === undefined) { return null; }
+
+    return rankToUser;
+  }
+
   public async assignRankToUser(
     {
       userId,
