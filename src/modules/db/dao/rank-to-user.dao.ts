@@ -1,4 +1,4 @@
-increaseRankCounterincreaseRankCounterimport { Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { DbModule } from '../db.module';
 import { RankToUserEntity } from '../entities';
 
