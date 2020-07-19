@@ -1,16 +1,28 @@
 import { AssignResponse } from '../responses';
-import { RankDao, ChangelogDao, RankToUserDao } from '../modules/db/dao';
+import {
+  RankDao, ChangelogDao, RankToUserDao, UserDao,
+} from '../modules/db/dao';
 
 interface AssignServiceData {
   user: { id: number };
-  rank: { id: number; comment: string; userId: number };
-  dao: { rank: RankDao; changelog: ChangelogDao; rankToUser: RankToUserDao };
+  rank: { id: number; comment: string; username: string };
+  dao: {
+    rank: RankDao;
+    changelog: ChangelogDao;
+    rankToUser: RankToUserDao;
+    user: UserDao;
+  };
 }
 
 export class AssignService {
-  private dao: { rank: RankDao; changelog: ChangelogDao; rankToUser: RankToUserDao };
+  private dao: {
+    rank: RankDao;
+    changelog: ChangelogDao;
+    rankToUser: RankToUserDao;
+    user: UserDao;
+  };
 
-  private rank: { id: number; comment: string; userId: number };
+  private rank: { id: number; comment: string; username: string };
 
   private user: { id: number };
 
@@ -21,36 +33,46 @@ export class AssignService {
   }
 
   public async handle(): Promise<AssignResponse> {
-    // /assign {rankId} {username} {comment}
-    // if (Number.isNaN(this.rank.id) === true) {
-    //   return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
-    // }
+    if (Number.isNaN(this.rank.id) === true) {
+      return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
+    }
 
-    // if (this.rank.nextTitle === '') {
-    //   return { text: 'Звание-то введи, болван' };
-    // }
+    if (this.rank.username === '') {
+      return { text: 'Нет такого пользователя, болван' };
+    }
 
-    // const rank = await this.dao.rank.getRank({ id: this.rank.id });
+    const userToAssign = await this.dao.user.getUserByUsername({
+      username: this.rank.username,
+    });
 
-    // if (rank === null) {
-    //   return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
-    // }
+    if (userToAssign === null) {
+      return { text: 'Нет такого пользователя, болван' };
+    }
 
-    // await this.dao.rank.updateRank({ id: rank.id, title: this.rank.nextTitle });
+    const rankToAssign = await this.dao.rank.getRank({ id: this.rank.id });
 
-    // await this.dao.changelog.createChangelog({
-    //   userId: this.user.id,
-    //   type: 'insert',
-    //   table: 'ranks_to_users',
-    //   objectId: rankToUser.id,
-    // previousValue: rank.title,
-    // currentValue: this.rank.nextTitle,
-    // });
+    if (rankToAssign === null) {
+      return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
+    }
+
+    const assignedRank = await this.dao.rankToUser.assignRankToUser({
+      userId: userToAssign.id,
+      rankId: rankToAssign.id,
+      comment: this.rank.comment,
+    });
+
+    await this.dao.changelog.createChangelog({
+      userId: this.user.id,
+      type: 'insert',
+      table: 'ranks_to_users',
+      objectId: assignedRank.id,
+      currentValue: rankToAssign.title,
+    });
 
     const response = new AssignResponse({
-      rankId: 0,
-      rankTitle: 'rank.title',
-      username: `${this.rank.userId}`,
+      rankId: rankToAssign.id,
+      rankTitle: rankToAssign.title,
+      username: userToAssign.username,
     });
 
     return response;
