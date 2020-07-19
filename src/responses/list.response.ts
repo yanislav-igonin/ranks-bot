@@ -28,7 +28,7 @@ export class ListResponse {
         this.text = this
           .text
           .concat(
-            `${rankId}. ${rankTitle}${count > 1 ? ` x${count}` : ''}${comment !== '' ? comment : ''}\n`,
+            `${rankId}. ${rankTitle}${count > 1 ? ` x${count}` : ''}${comment !== '' ? ` - ${comment}` : ''}\n`,
           );
       }
 
