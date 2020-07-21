@@ -55,7 +55,37 @@ export class AssignService {
       return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
     }
 
-    const assignedRank = await this.dao.rankToUser.assignRankToUser({
+    const assignedRank = await this.dao.rankToUser.getRankToUser({
+      rankId: rankToAssign.id,
+      userId: userToAssign.id,
+    });
+
+    if (assignedRank !== null) {
+      await this.dao
+        .rankToUser.increaseRankCounter({
+          userId: userToAssign.id,
+          rankId: rankToAssign.id,
+        });
+
+      await this.dao.changelog.createChangelog({
+        userId: this.user.id,
+        type: 'update',
+        table: 'ranks_to_users',
+        objectId: assignedRank.id,
+        previousValue: `${rankToAssign.title} x${assignedRank.count}`,
+        currentValue: `${rankToAssign.title} x${assignedRank.count + 1}`,
+      });
+
+      const response = new AssignResponse({
+        rankId: rankToAssign.id,
+        rankTitle: rankToAssign.title,
+        username: userToAssign.username,
+      });
+
+      return response;
+    }
+
+    const newAssignedRank = await this.dao.rankToUser.assignRankToUser({
       userId: userToAssign.id,
       rankId: rankToAssign.id,
       comment: this.rank.comment,
@@ -65,7 +95,7 @@ export class AssignService {
       userId: this.user.id,
       type: 'insert',
       table: 'ranks_to_users',
-      objectId: assignedRank.id,
+      objectId: newAssignedRank.id,
       currentValue: rankToAssign.title,
     });
 

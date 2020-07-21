@@ -17,7 +17,7 @@ export class RankToUserDao {
   }
 
   public async getRankToUser(
-    { rankId, userId }: {rankId: number; userId: number},
+    { rankId, userId }: { rankId: number; userId: number },
   ): Promise<RankToUserEntity | null> {
     const rankToUser = await this.repository.findOne({
       id: rankId,
@@ -50,17 +50,12 @@ export class RankToUserDao {
   }
 
   public async increaseRankCounter(
-    { userId, rankId }: { userId: number; rankId: number},
-  ): Promise<RankToUserEntity | null> {
-    const rank = await this.repository.findOne({
-      user: { id: userId }, rank: { id: rankId },
-    });
-    if (rank !== undefined) {
-      rank.count += 1;
-      await this.repository.save(rank);
-      return rank;
-    }
-
-    return null;
+    { userId, rankId }: { userId: number; rankId: number },
+  ): Promise<void> {
+    await this.repository.createQueryBuilder()
+      .update(RankToUserEntity)
+      .where({ user: { id: userId }, rank: { id: rankId } })
+      .set({ count: (): string => 'count + 1' })
+      .execute();
   }
 }
