@@ -58,4 +58,14 @@ export class RankToUserDao {
       .set({ count: (): string => 'count + 1' })
       .execute();
   }
+
+  public async decreaseRankCounter(
+    { userId, rankId }: { userId: number; rankId: number },
+  ): Promise<void> {
+    await this.repository.createQueryBuilder()
+      .update(RankToUserEntity)
+      .where({ user: { id: userId }, rank: { id: rankId } })
+      .set({ count: (): string => 'count - 1' })
+      .execute();
+  }
 }
