@@ -38,6 +38,7 @@ export class DeleteService {
       type: 'delete',
       table: 'ranks',
       objectId: rank.id,
+      previousValue: rank.title,
     });
 
     const response = new DeleteResponse({ rankId: rank.id, rankTitle: rank.title });

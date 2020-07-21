@@ -28,6 +28,7 @@ export class AddService {
       type: 'insert',
       table: 'ranks',
       objectId: rank.id,
+      currentValue: rank.title,
     });
 
     const response = new AddResponse({ rankId: rank.id, rankTitle: rank.title });
