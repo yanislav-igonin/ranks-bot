@@ -80,6 +80,7 @@ export class AssignService {
         rankId: rankToAssign.id,
         rankTitle: rankToAssign.title,
         username: userToAssign.username,
+        rankCount: assignedRank.count + 1,
       });
 
       return response;
