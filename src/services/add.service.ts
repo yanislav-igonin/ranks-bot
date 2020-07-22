@@ -21,6 +21,10 @@ export class AddService {
   }
 
   public async handle(): Promise<AddResponse> {
+    if (this.rank.title === '') {
+      return { text: 'Нельзя задавать пустое звание, долбаеб' };
+    }
+
     const rank = await this.dao.rank.createRank({ title: this.rank.title });
 
     await this.dao.changelog.createChangelog({
