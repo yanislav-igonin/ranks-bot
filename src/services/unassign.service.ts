@@ -84,7 +84,7 @@ export class UnassignService {
         rankId: assignedRank.id,
         rankTitle: rankToUnassign.title,
         username: userToUnassign.username,
-        rankCount: assignedRank.count,
+        rankCount: assignedRank.count - 1,
       });
     }
 
