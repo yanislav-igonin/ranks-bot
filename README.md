@@ -30,3 +30,5 @@ If there is a problem please create a bug report in the issues section.
 ## License :scroll:
 
 Licensed under [MIT License](https://github.com/yanislav-igonin/ranks-bot/blob/master/LICENSE)
+
+CI CHECK
