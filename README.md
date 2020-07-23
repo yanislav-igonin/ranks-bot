@@ -1,7 +1,5 @@
 # ranks-bot
 
-![License](https://img.shields.io/github/license/yanislav-igonin/ranks-bot.svg) ![Issues](https://img.shields.io/github/issues/yanislav-igonin/ranks-bot.svg) ![forks](https://img.shields.io/github/forks/yanislav-igonin/ranks-bot) ![stars](https://img.shields.io/github/stars/yanislav-igonin/ranks-bot) ![size](https://img.shields.io/github/repo-size/yanislav-igonin/ranks-bot)
-
 This is bot for ranks written in typescript.
 
 ## Motivation :question:
