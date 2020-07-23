@@ -49,6 +49,21 @@ export class RankToUserDao {
     return rankToUser;
   }
 
+  public async unassignRankToUser(
+    {
+      userId,
+      rankId,
+    }: {
+      userId: number;
+      rankId: number;
+    },
+  ): Promise<void> {
+    await this.repository.delete({
+      user: { id: userId },
+      rank: { id: rankId },
+    });
+  }
+
   public async increaseRankCounter(
     { userId, rankId }: { userId: number; rankId: number },
   ): Promise<void> {
