@@ -68,9 +68,17 @@ class BotModule {
           port: TelegramConfig.webhook.port,
         },
       });
+      await bot.telegram.sendMessage(
+        -1001230506485,
+        `Стартую ебать, релиз - ${AppConfig.release}`,
+      );
     } else {
       await bot.telegram.deleteWebhook();
       bot.startPolling();
+      await bot.telegram.sendMessage(
+        -1001230506485,
+        `Стартую ебать, релиз - ${AppConfig.release}`,
+      );
     }
   }
 }
