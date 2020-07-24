@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Use Node.js 12
       uses: actions/setup-node@v1
       with:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Use Node.js 12
       uses: actions/setup-node@v1
       with:
@@ -46,8 +46,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Echo
-      run: echo "Release ${{ github.event.release.tag_name }}"
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: yanislav-igonin/ranks-bot/ranks-bot
+          # tag_with_ref: true
+          dockerfile: production.Dockerfile
+          tags: latest, ${{ github.event.release.tag_name }}
+          build_args: CI_COMMIT_TAG=${{ github.event.release.tag_name }}
 
   deploy:
     needs: release
