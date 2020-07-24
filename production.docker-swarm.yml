@@ -12,6 +12,7 @@ services:
       WEBHOOK_PATH: ${WEBHOOK_PATH}
       IS_WEBHOOK_ENABLED: 'true'
       DB_URL: ${DB_URL}
+      DB_SYNC: ${DB_SYNC}
       USERS: ${USERS}
     deploy:
       replicas: 1

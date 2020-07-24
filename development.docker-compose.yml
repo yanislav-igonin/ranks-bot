@@ -12,6 +12,7 @@ services:
       WEBHOOK_PATH: ${WEBHOOK_PATH}
       IS_WEBHOOK_ENABLED: 'false'
       DB_URL: postgres://ranks-bot:test_password@postgres/ranks_bot
+      DB_SYNC: 'true'
       USERS: ${USERS}
     volumes:
       - ./src:/app/src
