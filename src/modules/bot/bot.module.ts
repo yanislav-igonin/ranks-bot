@@ -43,6 +43,9 @@ class BotModule {
     bot.command(['unassign', 'unassign@RanksBot'], UnassignController);
     bot.command(['update', 'update@RanksBot'], UpdateController);
     bot.command(['help', 'help@RanksBot'], HelpController);
+    bot.command(['release', 'release@RanksBot'], async (ctx): Promise<void> => {
+      await ctx.reply(AppConfig.release);
+    });
     bot.on('text', async (ctx): Promise<void> => {
       if (ctx.update.message.text.toLowerCase().includes('да')) {
         await ctx.reply('пизда');
