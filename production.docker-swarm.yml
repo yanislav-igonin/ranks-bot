@@ -5,12 +5,14 @@ services:
     networks:
       - web
     environment: 
-      - NODE_ENV=production
-      - BOT_TOKEN=${BOT_TOKEN}
-      - WEBHOOK_HOST=${WEBHOOK_HOST}
-      - WEBHOOK_PORT=${WEBHOOK_PORT}
-      - WEBHOOK_PATH=${WEBHOOK_PATH}
-      - IS_WEBHOOK_DISABLED=false
+      NODE_ENV: development
+      BOT_TOKEN: ${BOT_TOKEN}
+      WEBHOOK_HOST: ${WEBHOOK_HOST}
+      WEBHOOK_PORT: ${WEBHOOK_PORT}
+      WEBHOOK_PATH: ${WEBHOOK_PATH}
+      IS_WEBHOOK_ENABLED: 'true'
+      DB_URL: ${DB_URL}
+      USERS: ${USERS}
     deploy:
       replicas: 1
       update_config:
