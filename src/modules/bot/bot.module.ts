@@ -47,7 +47,7 @@ class BotModule {
       await ctx.reply(AppConfig.release);
     });
     bot.on('text', async (ctx): Promise<void> => {
-      if (ctx.update.message.text.toLowerCase().includes('да')) {
+      if (ctx.update.message.text.toLowerCase().split(' ').includes('да')) {
         await ctx.reply('пизда');
       }
     });
