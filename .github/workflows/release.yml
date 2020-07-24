@@ -45,7 +45,7 @@ jobs:
 
     steps:
     - name: Echo
-      run: echo "Release ${{ github.ref }}"
+      run: echo "Release ${{ github.event.release.tag_name }}"
 
   deploy:
     needs: release
@@ -54,4 +54,4 @@ jobs:
 
     steps:
     - name: Deploy
-      run: echo "Deploy release ${{ github.ref }}"
+      run: echo "Deploy release ${{ github.event.release.tag_name }}"
