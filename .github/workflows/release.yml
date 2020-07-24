@@ -1,6 +1,8 @@
 name: Release
 
-on: release
+on: 
+  release:
+    types: [published]
 
 jobs:
   lint:
@@ -54,4 +56,4 @@ jobs:
 
     steps:
     - name: Deploy
-      run: echo "Deploy release ${{ github.event.release.tag_name }}"
+      run: echo "Deploy release ${{ GITHUB_REF }}"
