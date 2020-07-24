@@ -56,4 +56,4 @@ jobs:
 
     steps:
     - name: Deploy
-      run: echo "Deploy release ${{ GITHUB_REF }}"
+      run: echo "Deploy release ${{ github.event.release.tag_name }}"
