@@ -10,5 +10,11 @@ export const AuthMiddleware: Middleware<TextContext> = async (
     await ctx.reply('Соси бибу, пес');
     return;
   }
+
+  if (ctx.update.message.chat.id !== -1001230506485) {
+    await ctx.reply('Действия доступны только в чате, шакал');
+    return;
+  }
+
   await next();
 };
