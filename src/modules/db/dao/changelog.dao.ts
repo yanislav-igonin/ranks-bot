@@ -39,4 +39,10 @@ export class ChangelogDao {
       currentValue,
     });
   }
+
+  public async getChangelog(): Promise<ChangelogEntity[]> {
+    const changelogs = await this.repository.find();
+
+    return changelogs;
+  }
 }

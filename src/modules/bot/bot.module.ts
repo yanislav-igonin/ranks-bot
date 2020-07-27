@@ -46,6 +46,9 @@ class BotModule {
     bot.command(['release', 'release@RanksBot'], async (ctx): Promise<void> => {
       await ctx.reply(AppConfig.release);
     });
+    bot.command(['changelog', 'changelog@RanksBot'], async (ctx): Promise<void> => {
+      await ctx.reply(AppConfig.release);
+    });
     bot.on('text', async (ctx): Promise<void> => {
       if (ctx.update.message.text.toLowerCase().split(' ').includes('да')) {
         await ctx.reply('пизда');
