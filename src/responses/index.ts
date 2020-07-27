@@ -5,6 +5,7 @@ import { DeleteResponse } from './delete.response';
 import { UpdateResponse } from './update.response';
 import { AssignResponse } from './assign.response';
 import { UnassignResponse } from './unassign.response';
+import { ChangelogResponse } from './changelog.response';
 
 export {
   HelpResponse,
@@ -14,4 +15,5 @@ export {
   UpdateResponse,
   AssignResponse,
   UnassignResponse,
+  ChangelogResponse,
 };
