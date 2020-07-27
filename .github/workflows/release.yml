@@ -62,7 +62,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: docker.pkg.github.com
           repository: yanislav-igonin/ranks-bot/ranks-bot
-          # tag_with_ref: true
           dockerfile: production.Dockerfile
           tags: latest, ${{ github.event.release.tag_name }}
           build_args: CI_COMMIT_TAG=${{ github.event.release.tag_name }}
