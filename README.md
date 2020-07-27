@@ -9,15 +9,15 @@ Made this bot for our telegram chat to assign ranks while we're playing in compe
 ## Installation :inbox_tray:
 
 ```bash
-> git clone https://github.com/yanislav-igonin/ranks-bot.git
+$ git clone https://github.com/yanislav-igonin/ranks-bot.git
 
-> cd ranks-bot
+$ cd ranks-bot
 
-> npm i
+$ npm i
 
-> BOT_TOKEN=... npm run dev
+$ BOT_TOKEN=... npm run dev
 OR
-> BOT_TOKEN=... docker-compose -f development.docker-compose.yml up --build
+$ BOT_TOKEN=... USERS=... docker-compose -f development.docker-compose.yml up --build
 ```
 
 ## Bugs :bug:
