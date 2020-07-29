@@ -5,6 +5,7 @@ import { DeleteService } from './delete.service';
 import { UpdateService } from './update.service';
 import { AssignService } from './assign.service';
 import { UnassignService } from './unassign.service';
+import { ChangelogService } from './changelog.service';
 
 export {
   HelpService,
@@ -14,4 +15,5 @@ export {
   UpdateService,
   AssignService,
   UnassignService,
+  ChangelogService,
 };

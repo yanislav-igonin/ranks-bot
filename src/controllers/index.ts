@@ -6,6 +6,7 @@ import { HelpController } from './help.controller';
 import { ListController } from './list.controller';
 import { UnassignController } from './unassign.controller';
 import { UpdateController } from './update.controller';
+import { ChangelogController } from './changelog.controller';
 
 export {
   StartController,
@@ -16,4 +17,5 @@ export {
   ListController,
   UnassignController,
   UpdateController,
+  ChangelogController,
 };

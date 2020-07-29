@@ -3,7 +3,7 @@ export interface ChangelogChunk {
   currentValue: string;
 }
 
-interface ChangelogResponseData {
+export interface ChangelogResponseData {
   [K: string]: {
     added?: ChangelogChunk[];
     deleted?: ChangelogChunk[];
