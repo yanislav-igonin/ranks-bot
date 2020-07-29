@@ -18,11 +18,6 @@ export class ChangelogDao {
     this.repository = DbModule.getRepository(ChangelogEntity);
   }
 
-  public async getChangelogs(): Promise<ChangelogEntity[]> {
-    const changelogs = await this.repository.find();
-    return changelogs;
-  }
-
   public async createChangelog(
     data: CreateChangelogData,
   ): Promise<void> {
@@ -40,7 +35,7 @@ export class ChangelogDao {
     });
   }
 
-  public async getChangelog(): Promise<ChangelogEntity[]> {
+  public async getChangelogs(): Promise<ChangelogEntity[]> {
     const changelogs = await this.repository.find();
 
     return changelogs;
