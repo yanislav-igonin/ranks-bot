@@ -1,6 +1,35 @@
 import { ChangelogResponse } from '../responses';
 import { ChangelogResponseData } from '../responses/changelog.response';
 import { ChangelogDao } from '../modules/db/dao';
+import { ChangelogEntity } from '../modules/db/entities';
+
+type OperationField = 'added' | 'updated' | 'deleted' | 'assigned' | 'unassigned';
+
+function getLogOperationField(
+  { table, type }: Pick<ChangelogEntity, 'table' | 'type'>,
+): OperationField {
+  const tablesOperationsMap = {
+    ranks_to_users: {
+      insert: 'assigned',
+      update: 'unassigned',
+      delete: 'unassigned',
+    },
+    ranks: {
+      insert: 'added',
+      update: 'updated',
+      delete: 'deleted',
+    },
+  };
+
+  const tableOperations = tablesOperationsMap[
+    table as 'ranks_to_users' | 'ranks'
+  ];
+  const operationField = tableOperations[
+    type as 'update' | 'delete' | 'insert'
+  ];
+
+  return operationField as OperationField;
+}
 
 interface DeleteServiceData {
   dao: { changelog: ChangelogDao };
@@ -21,23 +50,27 @@ export class ChangelogService {
         const {
           createdAt, currentValue, previousValue, table, type,
         } = record;
-        console.log('DEBUG: ChangelogService -> record', record);
 
-        const day = createdAt.getDate() + 1;
+        const day = createdAt.getDate();
         const month = createdAt.getMonth() + 1;
         const year = createdAt.getFullYear();
         const date = `${day < 10 ? `0${day}` : day}.${month < 10 ? `0${month}` : month}.${year}`;
-        console.log('DEBUG: ChangelogService -> date', date);
 
         if (acc[date] === undefined) {
           acc[date] = {};
         }
 
+        const logOperationField = getLogOperationField({ table, type });
+
+        if (acc[date][logOperationField] === undefined) {
+          acc[date][logOperationField] = [];
+        }
+
+        acc[date][logOperationField]?.push({ previousValue, currentValue });
+
         return acc;
       }, {},
     );
-
-    console.log('DEBUG: ChangelogService -> changelog', changelog);
 
     const response = new ChangelogResponse(changelog);
 
