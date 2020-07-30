@@ -95,7 +95,7 @@ export class UnassignService {
 
     await this.dao.changelog.createChangelog({
       userId: this.user.id,
-      type: 'update',
+      type: 'delete',
       table: 'ranks_to_users',
       objectId: assignedRank.id,
       previousValue: `${rankToUnassign.title}`,
