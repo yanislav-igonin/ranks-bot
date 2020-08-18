@@ -31,14 +31,14 @@ function getLogOperationField(
   return operationField as OperationField;
 }
 
-interface DeleteServiceData {
+interface ChangelogServiceData {
   dao: { changelog: ChangelogDao };
 }
 
 export class ChangelogService {
   private dao: { changelog: ChangelogDao };
 
-  public constructor(data: DeleteServiceData) {
+  public constructor(data: ChangelogServiceData) {
     this.dao = data.dao;
   }
 
