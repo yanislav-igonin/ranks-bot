@@ -20,7 +20,7 @@ export class RankToUserDao {
     { rankId, userId }: { rankId: number; userId: number },
   ): Promise<RankToUserEntity | null> {
     const rankToUser = await this.repository.findOne({
-      id: rankId,
+      rank: { id: rankId },
       user: { id: userId },
     });
 
