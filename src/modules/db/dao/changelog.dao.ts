@@ -2,14 +2,21 @@ import { Repository } from 'typeorm';
 import { DbModule } from '../db.module';
 import { ChangelogEntity } from '../entities';
 
+type UpdateType = 'update' | 'insert' | 'delete';
+type TableName = 'ranks' | 'ranks_to_users';
 interface CreateChangelogData {
   userId: number;
-  table: 'ranks' | 'ranks_to_users';
-  type: 'update' | 'insert' | 'delete';
+  table: TableName;
+  type: UpdateType;
   objectId: number;
   previousValue?: string;
   currentValue?: string;
 }
+
+/**
+ * неправильный тип апдейта при присвоении звания в ченджлоге
+ * звание попадает в графу аннулировано
+ */
 
 export class ChangelogDao {
   private repository: Repository<ChangelogEntity>;
@@ -36,7 +43,9 @@ export class ChangelogDao {
   }
 
   public async getChangelogs(): Promise<ChangelogEntity[]> {
-    const changelogs = await this.repository.find();
+    const changelogs = await this.repository.find({
+      relations: ['user'],
+    });
 
     return changelogs;
   }

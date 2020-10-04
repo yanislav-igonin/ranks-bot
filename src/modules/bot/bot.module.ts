@@ -49,7 +49,7 @@ class BotModule {
     });
     bot.command(['changelog', 'changelog@RanksBot'], ChangelogController);
     bot.on('text', async (ctx): Promise<void> => {
-      if (ctx.update.message.text.toLowerCase().split(' ').includes('да')) {
+      if (ctx.update.message.text.toLowerCase().split(' ').includes('да')) { // TODO: переделать в регулярку
         await ctx.reply('пизда');
       }
     });

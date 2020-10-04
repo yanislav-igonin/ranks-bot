@@ -11,7 +11,7 @@ function getLogOperationField(
   const tablesOperationsMap = {
     ranks_to_users: {
       insert: 'assigned',
-      update: 'unassigned',
+      update: 'unassigned', // вот эта вот шляпа не позволяет конкретно указывать, что я сделал, присвоил еще раз или аннулировал
       delete: 'unassigned',
     },
     ranks: {
@@ -43,7 +43,8 @@ export class ChangelogService {
   }
 
   public async handle(): Promise<ChangelogResponse> {
-    const rawChangelog = await this.dao.changelog.getChangelogs();
+    const rawChangelog = await this.dao.changelog.getChangelogs(); // TODO: вывод ника вместе с изменениями
+    console.log('DEBUG: ChangelogService -> rawChangelog', rawChangelog);
 
     const changelog = rawChangelog.reduce<ChangelogResponseData>(
       (acc, record): ChangelogResponseData => {
