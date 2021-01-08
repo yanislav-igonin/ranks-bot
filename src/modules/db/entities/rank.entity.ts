@@ -8,14 +8,14 @@ import { RankToUserEntity } from './rank-to-user.entity';
 @Entity({ name: 'ranks' })
 export class RankEntity {
   @PrimaryGeneratedColumn()
-  public id!: number;
+  id!: number;
 
   @Column()
-  public title!: string;
+  title!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  public createdAt!: Date;
+  createdAt!: Date;
 
-  @OneToMany((type) => RankToUserEntity, (rankToUser) => rankToUser.rank)
-  public rankToUsers!: RankToUserEntity[];
+  @OneToMany(() => RankToUserEntity, (rankToUser) => rankToUser.rank)
+  rankToUsers!: RankToUserEntity[];
 }

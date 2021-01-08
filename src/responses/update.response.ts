@@ -5,9 +5,9 @@ interface UpdateResponseData {
 }
 
 export class UpdateResponse {
-  public text: string;
+  text: string;
 
-  public constructor(data: UpdateResponseData) {
+  constructor(data: UpdateResponseData) {
     const { rankId, rankPreviousTitle, rankCurrentTitle } = data;
     this.text = `Обновлено звание: ${rankPreviousTitle} -> ${rankCurrentTitle}, ID - ${rankId}`;
   }

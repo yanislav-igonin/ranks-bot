@@ -3,11 +3,11 @@ import { HelpResponse } from '../responses';
 export class HelpService {
   private data: { text: string};
 
-  public constructor(data: { text: string }) {
+  constructor(data: { text: string }) {
     this.data = data;
   }
 
-  public handle(): HelpResponse {
+  handle(): HelpResponse {
     const response = new HelpResponse(this.data);
     return response;
   }

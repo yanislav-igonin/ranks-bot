@@ -6,9 +6,9 @@ interface UnassignResponseData {
 }
 
 export class UnassignResponse {
-  public text: string;
+  text: string;
 
-  public constructor(data: UnassignResponseData) {
+  constructor(data: UnassignResponseData) {
     const {
       rankId, rankTitle, username, rankCount,
     } = data;

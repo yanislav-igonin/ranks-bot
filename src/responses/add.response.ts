@@ -4,9 +4,9 @@ interface AddResponseData {
 }
 
 export class AddResponse {
-  public text: string;
+  text: string;
 
-  public constructor(data: AddResponseData) {
+  constructor(data: AddResponseData) {
     const { rankId, rankTitle } = data;
     this.text = `Добавлено звание: ${rankTitle}, ID - ${rankId}`;
   }

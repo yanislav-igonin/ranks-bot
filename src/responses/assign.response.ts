@@ -6,9 +6,9 @@ interface AssignResponseData {
 }
 
 export class AssignResponse {
-  public text: string;
+  text: string;
 
-  public constructor(data: AssignResponseData) {
+  constructor(data: AssignResponseData) {
     const {
       rankId, rankTitle, username, rankCount,
     } = data;

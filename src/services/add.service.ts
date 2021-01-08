@@ -14,13 +14,13 @@ export class AddService {
 
   private user: { id: number };
 
-  public constructor(data: AddServiceData) {
+  constructor(data: AddServiceData) {
     this.rank = data.rank;
     this.dao = data.dao;
     this.user = data.user;
   }
 
-  public async handle(): Promise<AddResponse> {
+  async handle(): Promise<AddResponse> {
     if (this.rank.title === '') {
       return { text: 'Нельзя задавать пустое звание, долбаеб' };
     }

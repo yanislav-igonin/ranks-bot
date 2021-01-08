@@ -10,17 +10,17 @@ import { ChangelogEntity } from './changelog.entity';
 @Entity({ name: 'users' })
 export class UserEntity {
   @PrimaryColumn({ unique: true })
-  public id!: number;
+  id!: number;
 
   @Column({ default: '' })
-  public username!: string;
+  username!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  public createdAt!: Date;
+  createdAt!: Date;
 
-  @OneToMany((type) => RankToUserEntity, (rankToUser) => rankToUser.user)
-  public rankToUsers!: RankToUserEntity[];
+  @OneToMany(() => RankToUserEntity, (rankToUser) => rankToUser.user)
+  rankToUsers!: RankToUserEntity[];
 
-  @OneToMany((type) => ChangelogEntity, (changelog) => changelog.user)
-  public changelogs!: ChangelogEntity[];
+  @OneToMany(() => ChangelogEntity, (changelog) => changelog.user)
+  changelogs!: ChangelogEntity[];
 }

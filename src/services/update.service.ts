@@ -14,13 +14,13 @@ export class UpdateService {
 
   private user: { id: number };
 
-  public constructor(data: UpdateServiceData) {
+  constructor(data: UpdateServiceData) {
     this.rank = data.rank;
     this.dao = data.dao;
     this.user = data.user;
   }
 
-  public async handle(): Promise<UpdateResponse> {
+  async handle(): Promise<UpdateResponse> {
     if (Number.isNaN(this.rank.id) === true) {
       return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
     }

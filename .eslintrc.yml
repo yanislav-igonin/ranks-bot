@@ -12,6 +12,7 @@ rules:
   - code: 85
     tabWidth: 2
     ignoreComments: true
+    ignoreTemplateLiterals: true
   arrow-parens:
   - error
   - always
@@ -27,5 +28,6 @@ rules:
     - error
     - accessibility: no-public
   lines-between-class-members: 0
+  no-restricted-syntax: 0
 env:
   node: true

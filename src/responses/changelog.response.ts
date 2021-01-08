@@ -14,9 +14,9 @@ export interface ChangelogResponseData {
 }
 
 export class ChangelogResponse {
-  public text: string;
+  text: string;
 
-  public constructor(data: ChangelogResponseData) {
+  constructor(data: ChangelogResponseData) {
     this.text = 'Лог изменений\n\n';
 
     const dates = Object.keys(data);

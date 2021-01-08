@@ -26,13 +26,13 @@ export class AssignService {
 
   private user: { id: number };
 
-  public constructor(data: AssignServiceData) {
+  constructor(data: AssignServiceData) {
     this.rank = data.rank;
     this.dao = data.dao;
     this.user = data.user;
   }
 
-  public async handle(): Promise<AssignResponse> {
+  async handle(): Promise<AssignResponse> {
     if (Number.isNaN(this.rank.id) === true) {
       return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
     }

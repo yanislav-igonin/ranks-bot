@@ -21,11 +21,11 @@ import { AuthMiddleware } from '../../middlewares';
 class BotModule {
   private config: typeof Config;
 
-  public constructor(config: typeof Config) {
+  constructor(config: typeof Config) {
     this.config = config;
   }
 
-  public async launch(): Promise<void> {
+  async launch(): Promise<void> {
     const { AppConfig, TelegramConfig } = this.config;
 
     const bot = new Telegraf<TextContext>(TelegramConfig.token);

@@ -4,9 +4,9 @@ interface DeleteResponseData {
 }
 
 export class DeleteResponse {
-  public text: string;
+  text: string;
 
-  public constructor(data: DeleteResponseData) {
+  constructor(data: DeleteResponseData) {
     const { rankId, rankTitle } = data;
     this.text = `Удалено звание: ${rankTitle}, ID - ${rankId}`;
   }

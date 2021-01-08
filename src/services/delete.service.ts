@@ -14,13 +14,13 @@ export class DeleteService {
 
   private user: { id: number };
 
-  public constructor(data: DeleteServiceData) {
+  constructor(data: DeleteServiceData) {
     this.rank = data.rank;
     this.dao = data.dao;
     this.user = data.user;
   }
 
-  public async handle(): Promise<DeleteResponse> {
+  async handle(): Promise<DeleteResponse> {
     if (Number.isNaN(this.rank.id) === true) {
       return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
     }

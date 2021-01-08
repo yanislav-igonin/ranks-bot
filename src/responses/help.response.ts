@@ -3,9 +3,9 @@ interface HelpResponseData {
 }
 
 export class HelpResponse {
-  public text: string;
+  text: string;
 
-  public constructor(data: HelpResponseData) {
+  constructor(data: HelpResponseData) {
     this.text = data.text;
   }
 }

@@ -9,11 +9,11 @@ interface ListServiceData {
 export class ListService {
   private dao: { rankToUser: RankToUserDao; rank: RankDao };
 
-  public constructor(data: ListServiceData) {
+  constructor(data: ListServiceData) {
     this.dao = data.dao;
   }
 
-  public async handle(): Promise<ListResponse> {
+  async handle(): Promise<ListResponse> {
     const ranksToUsers = await this.dao.rankToUser.getRanksToUsers();
     const assignedRanksIds = ranksToUsers.map((rtu): number => rtu.rank.id);
     const allRanks = await this.dao.rank.getRanks();

@@ -10,20 +10,20 @@ import { UserEntity } from './user.entity';
 @Entity({ name: 'ranks_to_users' })
 export class RankToUserEntity {
   @PrimaryGeneratedColumn()
-  public id!: number;
+  id!: number;
 
   @Column({ default: '' })
-  public comment!: string;
+  comment!: string;
 
   @Column({ default: 1 })
-  public count!: number;
+  count!: number;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  public createdAt!: Date;
+  createdAt!: Date;
 
-  @ManyToOne((type) => RankEntity, (rank) => rank.rankToUsers)
-  public rank!: RankEntity;
+  @ManyToOne(() => RankEntity, (rank) => rank.rankToUsers)
+  rank!: RankEntity;
 
-  @ManyToOne((type) => UserEntity, (user) => user.rankToUsers)
-  public user!: UserEntity;
+  @ManyToOne(() => UserEntity, (user) => user.rankToUsers)
+  user!: UserEntity;
 }

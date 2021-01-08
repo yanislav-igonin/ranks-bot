@@ -8,7 +8,7 @@ export class SeedInitialData1594905684546 implements MigrationInterface {
 
   private ranksToUsers: {user: {id: number}; rank: {id: number}; count?: number}[];
 
-  public constructor() {
+  constructor() {
     this.users = [
       { id: 142166671, username: 'hobo_with_a_hookah' },
       { id: 546166718, username: 'Noeter' },
@@ -182,7 +182,7 @@ export class SeedInitialData1594905684546 implements MigrationInterface {
   }
 
 
-  public async up(): Promise<void> {
+  async up(): Promise<void> {
     const userRepository = getRepository(UserEntity);
     await userRepository.save(this.users);
 
@@ -193,7 +193,7 @@ export class SeedInitialData1594905684546 implements MigrationInterface {
     await rankToUserRepository.save(this.ranksToUsers);
   }
 
-  public async down(): Promise<void> {
+  async down(): Promise<void> {
     const userRepository = getRepository(UserEntity);
     const userIds = this.users.map((u): number => u.id);
     const users = await userRepository.findByIds(userIds);

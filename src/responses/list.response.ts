@@ -10,9 +10,9 @@ export interface ListResponseData {
 }
 
 export class ListResponse {
-  public text: string;
+  text: string;
 
-  public constructor(data: ListResponseData) {
+  constructor(data: ListResponseData) {
     this.text = '';
     const keys = Object.keys(data);
 

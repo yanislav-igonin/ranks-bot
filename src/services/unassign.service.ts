@@ -26,13 +26,13 @@ export class UnassignService {
 
   private user: { id: number };
 
-  public constructor(data: UnassignServiceData) {
+  constructor(data: UnassignServiceData) {
     this.rank = data.rank;
     this.dao = data.dao;
     this.user = data.user;
   }
 
-  public async handle(): Promise<UnassignResponse> {
+  async handle(): Promise<UnassignResponse> {
     if (Number.isNaN(this.rank.id) === true) {
       return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
     }

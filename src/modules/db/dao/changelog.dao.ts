@@ -21,13 +21,11 @@ interface CreateChangelogData {
 export class ChangelogDao {
   private repository: Repository<ChangelogEntity>;
 
-  public constructor() {
+  constructor() {
     this.repository = DbModule.getRepository(ChangelogEntity);
   }
 
-  public async createChangelog(
-    data: CreateChangelogData,
-  ): Promise<void> {
+  async createChangelog(data: CreateChangelogData): Promise<void> {
     const {
       type, userId, table, objectId, previousValue, currentValue,
     } = data;
@@ -42,7 +40,7 @@ export class ChangelogDao {
     });
   }
 
-  public async getChangelogs(): Promise<ChangelogEntity[]> {
+  async getChangelogs(): Promise<ChangelogEntity[]> {
     const changelogs = await this.repository.find({
       relations: ['user'],
     });

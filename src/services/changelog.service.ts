@@ -38,13 +38,12 @@ interface ChangelogServiceData {
 export class ChangelogService {
   private dao: { changelog: ChangelogDao };
 
-  public constructor(data: ChangelogServiceData) {
+  constructor(data: ChangelogServiceData) {
     this.dao = data.dao;
   }
 
-  public async handle(): Promise<ChangelogResponse> {
+  async handle(): Promise<ChangelogResponse> {
     const rawChangelog = await this.dao.changelog.getChangelogs(); // TODO: вывод ника вместе с изменениями
-    console.log('DEBUG: ChangelogService -> rawChangelog', rawChangelog);
 
     const changelog = rawChangelog.reduce<ChangelogResponseData>(
       (acc, record): ChangelogResponseData => {

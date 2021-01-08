@@ -8,26 +8,26 @@ import { UserEntity } from './user.entity';
 @Entity({ name: 'changelogs' })
 export class ChangelogEntity {
   @PrimaryGeneratedColumn()
-  public id!: number;
+  id!: number;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  public createdAt!: Date;
+  createdAt!: Date;
 
   @Column()
-  public type!: string;
+  type!: string;
 
   @Column()
-  public table!: string;
+  table!: string;
 
   @Column()
-  public objectId!: number;
+  objectId!: number;
 
   @Column({ default: '' })
-  public previousValue!: string;
+  previousValue!: string;
 
   @Column({ default: '' })
-  public currentValue!: string;
+  currentValue!: string;
 
-  @ManyToOne((type) => UserEntity, (user) => user.changelogs)
-  public user!: UserEntity;
+  @ManyToOne(() => UserEntity, (user) => user.changelogs)
+  user!: UserEntity;
 }
