@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { AppConfig } from './config';
 import { LoggerModule, BotModule, DbModule } from './modules';
 
-const launch = async (): Promise<void> => {
+const launch = async () => {
   LoggerModule.info('release -', AppConfig.release);
   await DbModule.connect();
   LoggerModule.info('db - connection - success');
@@ -11,8 +11,8 @@ const launch = async (): Promise<void> => {
 };
 
 launch()
-  .then((): void => LoggerModule.info('all systems nominal'))
-  .catch((err: Error): void => {
+  .then(() => LoggerModule.info('all systems nominal'))
+  .catch((err: Error) => {
     LoggerModule.error('bot - offline');
     LoggerModule.error(err);
   });
