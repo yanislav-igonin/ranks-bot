@@ -182,7 +182,7 @@ export class SeedInitialData1594905684546 implements MigrationInterface {
   }
 
 
-  async up(): Promise<void> {
+  async up() {
     const userRepository = getRepository(UserEntity);
     await userRepository.save(this.users);
 
@@ -193,7 +193,7 @@ export class SeedInitialData1594905684546 implements MigrationInterface {
     await rankToUserRepository.save(this.ranksToUsers);
   }
 
-  async down(): Promise<void> {
+  async down() {
     const userRepository = getRepository(UserEntity);
     const userIds = this.users.map((u): number => u.id);
     const users = await userRepository.findByIds(userIds);

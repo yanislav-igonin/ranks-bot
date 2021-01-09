@@ -9,16 +9,14 @@ export class RankToUserDao {
     this.repository = DbModule.getRepository(RankToUserEntity);
   }
 
-  async getRanksToUsers(): Promise<RankToUserEntity[]> {
+  async getRanksToUsers() {
     const ranksToUsers = await this.repository.find({
       relations: ['user', 'rank'],
     });
     return ranksToUsers;
   }
 
-  async getRankToUser(
-    { rankId, userId }: { rankId: number; userId: number },
-  ): Promise<RankToUserEntity | null> {
+  async getRankToUser({ rankId, userId }: { rankId: number; userId: number }) {
     const rankToUser = await this.repository.findOne({
       rank: { id: rankId },
       user: { id: userId },
@@ -39,7 +37,7 @@ export class RankToUserDao {
       rankId: number;
       comment?: string;
     },
-  ): Promise<RankToUserEntity> {
+  ) {
     const rankToUser = await this.repository.save({
       user: { id: userId },
       rank: { id: rankId },
@@ -57,7 +55,7 @@ export class RankToUserDao {
       userId: number;
       rankId: number;
     },
-  ): Promise<void> {
+  ) {
     await this.repository.delete({
       user: { id: userId },
       rank: { id: rankId },
@@ -66,7 +64,7 @@ export class RankToUserDao {
 
   async increaseRankCounter(
     { userId, rankId }: { userId: number; rankId: number },
-  ): Promise<void> {
+  ) {
     await this.repository.createQueryBuilder()
       .update(RankToUserEntity)
       .where({ user: { id: userId }, rank: { id: rankId } })
@@ -76,7 +74,7 @@ export class RankToUserDao {
 
   async decreaseRankCounter(
     { userId, rankId }: { userId: number; rankId: number },
-  ): Promise<void> {
+  ) {
     await this.repository.createQueryBuilder()
       .update(RankToUserEntity)
       .where({ user: { id: userId }, rank: { id: rankId } })

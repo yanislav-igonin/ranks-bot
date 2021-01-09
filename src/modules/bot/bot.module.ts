@@ -25,7 +25,7 @@ class BotModule {
     this.config = config;
   }
 
-  async launch(): Promise<void> {
+  async launch() {
     const { AppConfig, TelegramConfig } = this.config;
 
     const bot = new Telegraf<TextContext>(TelegramConfig.token);

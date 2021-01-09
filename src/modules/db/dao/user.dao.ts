@@ -9,14 +9,12 @@ export class UserDao {
     this.repository = DbModule.getRepository(UserEntity);
   }
 
-  async getUsers(): Promise<UserEntity[]> {
+  async getUsers() {
     const users = await this.repository.find();
     return users;
   }
 
-  async getUserByUsername(
-    { username }: { username: string },
-  ): Promise<UserEntity | null> {
+  async getUserByUsername({ username }: { username: string }) {
     const user = await this.repository.findOne({ username });
 
     if (user === undefined) { return null; }

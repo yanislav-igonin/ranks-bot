@@ -25,7 +25,7 @@ export class ChangelogDao {
     this.repository = DbModule.getRepository(ChangelogEntity);
   }
 
-  async createChangelog(data: CreateChangelogData): Promise<void> {
+  async createChangelog(data: CreateChangelogData) {
     const {
       type, userId, table, objectId, previousValue, currentValue,
     } = data;
@@ -40,7 +40,7 @@ export class ChangelogDao {
     });
   }
 
-  async getChangelogs(): Promise<ChangelogEntity[]> {
+  async getChangelogs() {
     const changelogs = await this.repository.find({
       relations: ['user'],
     });
