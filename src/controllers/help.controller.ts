@@ -1,7 +1,7 @@
 import { TextContext } from '../modules/bot/interfaces';
 import { HelpService } from '../services';
 
-export const HelpController = async (ctx: TextContext): Promise<void> => {
+export const HelpController = async (ctx: TextContext) => {
   const helpText = `
 /add {rank} - добавляет новое звание. 
 /update {rankId} {new_rank} - меняет значение звания (например, если ошибся в слове). 

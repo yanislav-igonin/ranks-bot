@@ -4,7 +4,7 @@ import {
   RankDao, ChangelogDao, RankToUserDao, UserDao,
 } from '../modules/db/dao';
 
-export const UnassignController = async (ctx: TextContext): Promise<void> => {
+export const UnassignController = async (ctx: TextContext) => {
   const unassignText = ctx.update.message.text.slice(
     ctx.update.message.entities[0].length + 1,
     ctx.update.message.text.length,

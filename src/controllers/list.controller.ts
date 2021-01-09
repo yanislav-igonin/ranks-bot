@@ -3,7 +3,7 @@ import { ListService } from '../services';
 import { RankToUserDao, RankDao } from '../modules/db/dao';
 
 
-export const ListController = async (ctx: TextContext): Promise<void> => {
+export const ListController = async (ctx: TextContext) => {
   const rankToUserDao = new RankToUserDao();
   const rankDao = new RankDao();
   const service = new ListService({

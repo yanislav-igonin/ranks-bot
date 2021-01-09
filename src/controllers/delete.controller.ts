@@ -2,7 +2,7 @@ import { TextContext } from '../modules/bot/interfaces';
 import { DeleteService } from '../services';
 import { RankDao, ChangelogDao } from '../modules/db/dao';
 
-export const DeleteController = async (ctx: TextContext): Promise<void> => {
+export const DeleteController = async (ctx: TextContext) => {
   const rankText = ctx.update.message.text.slice(
     ctx.update.message.entities[0].length + 1,
     ctx.update.message.text.length,
