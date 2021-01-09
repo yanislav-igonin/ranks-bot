@@ -13,7 +13,7 @@ export class ListService {
     this.dao = data.dao;
   }
 
-  async handle(): Promise<ListResponse> {
+  async handle() {
     const ranksToUsers = await this.dao.rankToUser.getRanksToUsers();
     const assignedRanksIds = ranksToUsers.map((rtu): number => rtu.rank.id);
     const allRanks = await this.dao.rank.getRanks();

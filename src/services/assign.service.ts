@@ -32,7 +32,7 @@ export class AssignService {
     this.user = data.user;
   }
 
-  async handle(): Promise<AssignResponse> {
+  async handle() {
     if (Number.isNaN(this.rank.id) === true) {
       return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
     }

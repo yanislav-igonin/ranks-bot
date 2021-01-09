@@ -7,7 +7,7 @@ export class HelpService {
     this.data = data;
   }
 
-  handle(): HelpResponse {
+  handle() {
     const response = new HelpResponse(this.data);
     return response;
   }

@@ -20,7 +20,7 @@ export class UpdateService {
     this.user = data.user;
   }
 
-  async handle(): Promise<UpdateResponse> {
+  async handle() {
     if (Number.isNaN(this.rank.id) === true) {
       return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
     }

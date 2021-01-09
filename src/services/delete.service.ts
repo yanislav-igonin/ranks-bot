@@ -20,7 +20,7 @@ export class DeleteService {
     this.user = data.user;
   }
 
-  async handle(): Promise<DeleteResponse> {
+  async handle() {
     if (Number.isNaN(this.rank.id) === true) {
       return { text: 'Нет такого звания, пошел нахуй, долбаеб' };
     }

@@ -20,7 +20,7 @@ export class AddService {
     this.user = data.user;
   }
 
-  async handle(): Promise<AddResponse> {
+  async handle() {
     if (this.rank.title === '') {
       return { text: 'Нельзя задавать пустое звание, долбаеб' };
     }
