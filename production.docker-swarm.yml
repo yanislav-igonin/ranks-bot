@@ -1,16 +1,16 @@
 version: '3.7'
 services:
   app:
-    image: docker.pkg.github.com/yanislav-igonin/ranks-bot/ranks-bot:latest
-    networks:
-      - web
+    image: ghcr.io/yanislav-igonin/ranks-bot/ranks-bot:latest
+    # networks:
+    #   - web
     environment: 
       NODE_ENV: production
       BOT_TOKEN: ${BOT_TOKEN}
       WEBHOOK_HOST: ${WEBHOOK_HOST}
       WEBHOOK_PORT: ${WEBHOOK_PORT}
       WEBHOOK_PATH: ${WEBHOOK_PATH}
-      IS_WEBHOOK_ENABLED: 'true'
+      IS_WEBHOOK_ENABLED: 'false'
       DB_URL: ${DB_URL}
       DB_SYNC: ${DB_SYNC}
       USERS: ${USERS}
@@ -38,7 +38,7 @@ services:
         traefik.http.routers.ranks-bot-secure.tls: "true"
         traefik.http.routers.ranks-bot-secure.service: "ranks-bot"
 
-networks:
-  web:
-    driver: overlay
-    external: true
+# networks:
+#   web:
+#     driver: overlay
+#     external: true
