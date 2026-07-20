@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ranks-bot
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: ranks_bot
+    ports:
+      - 5432:5432
