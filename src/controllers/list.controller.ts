@@ -1,6 +1,7 @@
 import { TextContext } from '../modules/bot/interfaces';
 import { ListService } from '../services';
 import { RankToUserDao, RankDao } from '../modules/db/dao';
+import { replyInChunks } from './reply-in-chunks';
 
 
 export const ListController = async (ctx: TextContext) => {
@@ -10,5 +11,5 @@ export const ListController = async (ctx: TextContext) => {
     dao: { rankToUser: rankToUserDao, rank: rankDao },
   });
   const response = await service.handle();
-  ctx.reply(response.text);
+  await replyInChunks(ctx, response.text);
 };

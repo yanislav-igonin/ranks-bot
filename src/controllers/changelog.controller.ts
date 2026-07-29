@@ -1,6 +1,7 @@
 import { TextContext } from '../modules/bot/interfaces';
 import { ChangelogService } from '../services';
 import { ChangelogDao } from '../modules/db/dao';
+import { replyInChunks } from './reply-in-chunks';
 
 export const ChangelogController = async (ctx: TextContext) => {
   const changelogDao = new ChangelogDao();
@@ -10,5 +11,5 @@ export const ChangelogController = async (ctx: TextContext) => {
   });
 
   const response = await service.handle();
-  ctx.reply(response.text);
+  await replyInChunks(ctx, response.text);
 };
