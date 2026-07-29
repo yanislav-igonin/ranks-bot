@@ -15,7 +15,6 @@ const DbModule = new DataSource({
   type: 'postgres',
   entities: [RankEntity, UserEntity, RankToUserEntity, ChangelogEntity],
   migrations: [SeedInitialData1594905684546],
-  migrationsRun: true,
   ...DbConfig,
   namingStrategy: new SnakeNamingStrategy(),
 });
