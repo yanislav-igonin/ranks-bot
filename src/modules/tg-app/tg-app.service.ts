@@ -77,51 +77,48 @@ export class TgAppService {
   private readonly dao: TgAppDaoPort;
   private readonly botToken?: string;
   private readonly environment: string;
-  private readonly devTelegramUserId?: number;
+  private readonly allowedTelegramUserIds: number[];
 
   constructor(options: {
     dao: TgAppDaoPort;
     botToken?: string;
     environment: string;
-    devTelegramUserId?: number;
+    allowedTelegramUserIds: number[];
   }) {
     this.dao = options.dao;
     this.botToken = options.botToken;
     this.environment = options.environment;
-    this.devTelegramUserId = options.devTelegramUserId;
+    this.allowedTelegramUserIds = options.allowedTelegramUserIds;
   }
 
   authenticate(
     authorization: string | undefined,
     nowSeconds = Math.floor(Date.now() / 1000),
   ): TelegramUser {
-    let user: TelegramUser;
-
-    if (this.environment === 'development' && !authorization) {
-      const fixedUser = FIXED_USERS.find(({ id }) => id === this.devTelegramUserId);
-      if (!fixedUser) {
+    if (this.environment === 'development') {
+      const actorId = this.allowedTelegramUserIds[0];
+      if (!Number.isInteger(actorId)) {
         throw new TgAppError(401, 'User is not allowed');
       }
-      user = {
-        id: fixedUser.id,
-        first_name: fixedUser.displayName,
-        username: fixedUser.username,
+      return {
+        id: actorId,
+        first_name: 'Development user',
       };
-    } else {
-      if (!authorization?.startsWith('tma ')) {
-        throw new TgAppError(401, 'Telegram authorization is required');
-      }
-      if (!this.botToken) {
-        throw new TgAppError(401, 'Telegram authorization is unavailable');
-      }
-      user = this.validateInitData(
-        authorization.slice('tma '.length),
-        this.botToken,
-        nowSeconds,
-      );
     }
 
-    if (!FIXED_USERS.some(({ id }) => id === user.id)) {
+    if (!authorization?.startsWith('tma ')) {
+      throw new TgAppError(401, 'Telegram authorization is required');
+    }
+    if (!this.botToken) {
+      throw new TgAppError(401, 'Telegram authorization is unavailable');
+    }
+    const user = this.validateInitData(
+      authorization.slice('tma '.length),
+      this.botToken,
+      nowSeconds,
+    );
+
+    if (!this.allowedTelegramUserIds.includes(user.id)) {
       throw new TgAppError(401, 'User is not allowed');
     }
 

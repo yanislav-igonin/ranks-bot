@@ -40,8 +40,9 @@ Terminal 2 starts the Vite frontend with HMR:
 npm --prefix src/tg-app run dev
 ```
 
-Vite proxies `/api` and `/health` to `http://localhost:3000`.
-`DEV_TELEGRAM_USER_ID` enables an allowlisted identity only outside production.
+Vite proxies `/api` and `/health` to `http://localhost:3000`. Development
+requests skip Telegram authentication and use the first ID from `USERS` as the
+technical changelog actor.
 
 ## Production
 
@@ -52,8 +53,7 @@ npm run build
 npm start
 ```
 
-`npm start` forces `NODE_ENV=production`; do not set
-`DEV_TELEGRAM_USER_ID` in the production environment.
+`npm start` forces `NODE_ENV=production`.
 
 `npm run build` creates `build/index.js` and `src/tg-app/dist/web`.
 
@@ -62,7 +62,8 @@ Environment:
 - `BOT_TOKEN` — bot token and Mini App signature secret;
 - `TG_APP_PORT` — Mini App HTTP port, default `3000`;
 - `TG_APP_STATIC_DIR` — optional built frontend directory override;
-- `DEV_TELEGRAM_USER_ID` — development-only allowlisted identity;
+- `USERS` — production Telegram access allowlist; its first ID is the local
+  development actor;
 - `WEBHOOK_PORT` — bot webhook port, separate from `TG_APP_PORT`;
 - `DB_URL` — shared PostgreSQL database used by the root `DbModule`.
 

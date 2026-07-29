@@ -28,9 +28,9 @@ npm --prefix src/tg-app run dev
 ```
 
 Vite serves `http://localhost:5173` and proxies `/api` and `/health` to the
-root process at `http://localhost:3000`. Set `DEV_TELEGRAM_USER_ID` on the root
-process to one of the three IDs when developing outside Telegram. Production
-never accepts this bypass.
+root process at `http://localhost:3000`. In development, the API skips Telegram
+authentication and uses the first ID from the root `USERS` setting as the
+technical changelog actor.
 
 ## Verification
 
@@ -53,8 +53,8 @@ npm run build
 npm start
 ```
 
-`npm start` forces `NODE_ENV=production`; production must not set
-`DEV_TELEGRAM_USER_ID`.
+`npm start` forces `NODE_ENV=production`. Production validates Telegram
+`initData` and allows only IDs listed in the root `USERS` setting.
 
 The root process exposes:
 

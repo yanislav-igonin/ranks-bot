@@ -2,7 +2,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import path from 'node:path';
 
-import { AppConfig, TelegramConfig, TgAppConfig } from '../../config';
+import { AppConfig, AuthConfig, TelegramConfig, TgAppConfig } from '../../config';
 import { DbModule } from '../db/db.module';
 import { LoggerModule } from '../logger.module';
 import { TgAppController } from './tg-app.controller';
@@ -226,7 +226,7 @@ const service = new TgAppService({
   dao: new TgAppDao(DbModule),
   botToken: TelegramConfig.token,
   environment: AppConfig.env,
-  devTelegramUserId: TgAppConfig.devTelegramUserId,
+  allowedTelegramUserIds: AuthConfig.users,
 });
 
 export const TgAppModule = createTgAppModule({

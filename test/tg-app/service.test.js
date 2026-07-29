@@ -33,7 +33,7 @@ const createService = (dao = createDao()) =>
   new TgAppService({
     dao,
     environment: 'development',
-    devTelegramUserId: 142166671,
+    allowedTelegramUserIds: [383288860, 142166671],
   });
 
 test('maps DAO state to the existing frontend contract', async () => {
@@ -71,7 +71,7 @@ test('passes authenticated actor to DAO assignment and refreshes state', async (
   const state = await createService(dao).assign(undefined, 65, 546166718);
 
   assert.deepEqual(dao.calls, [
-    { rankId: 65, recipientId: 546166718, actorId: 142166671 },
+    { rankId: 65, recipientId: 546166718, actorId: 383288860 },
   ]);
   assert.equal(state.availableRanks[0].id, 65);
 });

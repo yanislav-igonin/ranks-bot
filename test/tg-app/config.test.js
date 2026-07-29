@@ -3,7 +3,7 @@ require('ts-node/register');
 const assert = require('node:assert/strict');
 const { afterEach, test } = require('node:test');
 
-const ENV_KEYS = ['TG_APP_PORT', 'TG_APP_STATIC_DIR', 'DEV_TELEGRAM_USER_ID'];
+const ENV_KEYS = ['TG_APP_PORT', 'TG_APP_STATIC_DIR'];
 const ORIGINAL_ENV = Object.fromEntries(
   ENV_KEYS.map((key) => [key, process.env[key]]),
 );
@@ -30,12 +30,10 @@ test('uses port 3000 by default', () => {
 test('reads explicit Mini App settings', () => {
   process.env.TG_APP_PORT = '4100';
   process.env.TG_APP_STATIC_DIR = '/tmp/ranks-web';
-  process.env.DEV_TELEGRAM_USER_ID = '142166671';
 
   assert.deepEqual(loadConfig(), {
     port: 4100,
     staticDirectory: '/tmp/ranks-web',
-    devTelegramUserId: 142166671,
   });
 });
 

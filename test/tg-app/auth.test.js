@@ -47,6 +47,7 @@ const productionService = () =>
     dao,
     botToken: TOKEN,
     environment: 'production',
+    allowedTelegramUserIds: [546166718, 142166671, 383288860],
   });
 
 test('accepts valid signed initData for an allowed user', () => {
@@ -120,6 +121,22 @@ test('rejects a valid Telegram user outside the allowlist', () => {
   );
 });
 
+test('accepts a signed user configured in the shared allowlist', () => {
+  const service = new TgAppService({
+    dao,
+    botToken: TOKEN,
+    environment: 'production',
+    allowedTelegramUserIds: [999],
+  });
+  const configuredUser = signedInitData({
+    id: 999,
+    first_name: 'Configured',
+    username: 'configured',
+  });
+
+  assert.equal(service.authenticate(`tma ${configuredUser}`, NOW_SECONDS).id, 999);
+});
+
 test('requires Telegram authorization in production', () => {
   assert.throws(
     () => productionService().authenticate(undefined, NOW_SECONDS),
@@ -127,22 +144,25 @@ test('requires Telegram authorization in production', () => {
   );
 });
 
-test('uses an allowlisted development identity in development', () => {
+test('skips Telegram auth and uses the first configured user in development', () => {
   const service = new TgAppService({
     dao,
     environment: 'development',
-    devTelegramUserId: 546166718,
+    allowedTelegramUserIds: [383288860, 546166718],
   });
 
-  assert.equal(service.authenticate(undefined, NOW_SECONDS).id, 546166718);
+  assert.equal(
+    service.authenticate('invalid Telegram data', NOW_SECONDS).id,
+    383288860,
+  );
 });
 
-test('never accepts the development identity in production', () => {
+test('does not apply the development bypass in production', () => {
   const service = new TgAppService({
     dao,
     botToken: TOKEN,
     environment: 'production',
-    devTelegramUserId: 546166718,
+    allowedTelegramUserIds: [546166718],
   });
 
   assert.throws(
@@ -151,15 +171,28 @@ test('never accepts the development identity in production', () => {
   );
 });
 
-test('accepts the development identity only in development', () => {
+test('does not apply the development bypass in other environments', () => {
   const service = new TgAppService({
     dao,
     environment: 'test',
-    devTelegramUserId: 546166718,
+    allowedTelegramUserIds: [546166718],
   });
 
   assert.throws(
     () => service.authenticate(undefined, NOW_SECONDS),
     new TgAppError(401, 'Telegram authorization is required'),
+  );
+});
+
+test('rejects development requests when USERS is empty', () => {
+  const service = new TgAppService({
+    dao,
+    environment: 'development',
+    allowedTelegramUserIds: [],
+  });
+
+  assert.throws(
+    () => service.authenticate(undefined, NOW_SECONDS),
+    new TgAppError(401, 'User is not allowed'),
   );
 });
