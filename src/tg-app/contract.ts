@@ -1,7 +1,13 @@
 export interface Rank {
   id: number;
   title: string;
-  count?: number;
+}
+
+export interface AssignedRank extends Rank {
+  assignmentId: number;
+  comment: string;
+  count: number;
+  assignedAt: string;
 }
 
 export interface FixedUser {
@@ -12,7 +18,7 @@ export interface FixedUser {
 }
 
 export interface AssignedUser extends FixedUser {
-  ranks: Required<Rank>[];
+  ranks: AssignedRank[];
 }
 
 export interface AppState {

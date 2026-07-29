@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import { AppConfig, AuthConfig, TelegramConfig, TgAppConfig } from '../../config';
 import { DbModule } from '../db/db.module';
+import { BotModule } from '../bot/bot.module';
 import { LoggerModule } from '../logger.module';
 import { TgAppController } from './tg-app.controller';
 import { TgAppDao } from './tg-app.dao';
@@ -27,7 +28,7 @@ const MIME_TYPES: Record<string, string> = {
 class RequestBodyTooLarge extends Error {}
 
 export interface TgAppServer {
-  launch(): Promise<void>;
+  launch(): Promise<number>;
   close(): Promise<void>;
 }
 
@@ -181,15 +182,20 @@ export const createTgAppModule = ({
     }
   });
 
-  let launchPromise: Promise<void> | undefined;
+  let launchPromise: Promise<number> | undefined;
   let closePromise: Promise<void> | undefined;
 
   return {
     launch() {
-      if (server.listening) return Promise.resolve();
+      if (server.listening) {
+        const address = server.address();
+        if (address && typeof address !== 'string') {
+          return Promise.resolve(address.port);
+        }
+      }
       if (launchPromise) return launchPromise;
 
-      launchPromise = new Promise<void>((resolve, reject) => {
+      launchPromise = new Promise<number>((resolve, reject) => {
         const onError = (error: Error) => {
           launchPromise = undefined;
           reject(error);
@@ -200,8 +206,10 @@ export const createTgAppModule = ({
           const address = server.address();
           if (address && typeof address !== 'string') {
             onListening?.(address.port);
+            resolve(address.port);
+            return;
           }
-          resolve();
+          reject(new Error('Mini App server has no TCP port'));
         });
       });
       return launchPromise;
@@ -227,6 +235,10 @@ const service = new TgAppService({
   botToken: TelegramConfig.token,
   environment: AppConfig.env,
   allowedTelegramUserIds: AuthConfig.users,
+  notifier: {
+    send: (text) => BotModule.sendGroupMessage(text),
+  },
+  logError: (error) => LoggerModule.error(error),
 });
 
 export const TgAppModule = createTgAppModule({

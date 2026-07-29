@@ -6,7 +6,7 @@ const { launchApplication } = require('../../src/index');
 
 test('database is ready before bot and Mini App launch', async () => {
   const events = [];
-  await launchApplication({
+  const port = await launchApplication({
     db: {
       async initialize() {
         events.push('db:init');
@@ -29,6 +29,7 @@ test('database is ready before bot and Mini App launch', async () => {
     tgApp: {
       async launch() {
         events.push('tg-app');
+        return 4321;
       },
       async close() {
         events.push('tg-app:close');
@@ -38,6 +39,7 @@ test('database is ready before bot and Mini App launch', async () => {
 
   assert.deepEqual(events.slice(0, 2), ['db:init', 'db:migrate']);
   assert.deepEqual(new Set(events.slice(2)), new Set(['bot', 'tg-app']));
+  assert.equal(port, 4321);
 });
 
 test('startup failure attempts to close every initialized module', async () => {
@@ -68,6 +70,7 @@ test('startup failure attempts to close every initialized module', async () => {
       tgApp: {
         async launch() {
           events.push('tg-app');
+          return 4321;
         },
         async close() {
           events.push('tg-app:close');
