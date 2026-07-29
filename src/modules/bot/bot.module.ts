@@ -1,4 +1,4 @@
-import * as ngrok from 'ngrok';
+import ngrok from '@ngrok/ngrok';
 import { Telegraf } from 'telegraf';
 
 import * as Config from '../../config';
@@ -57,7 +57,15 @@ class BotModule {
     if (TelegramConfig.webhook.isEnabled) {
       let host: string;
       if (AppConfig.env === 'development') {
-        host = await ngrok.connect(TelegramConfig.webhook.port);
+        const listener = await ngrok.forward({
+          addr: TelegramConfig.webhook.port,
+          authtoken_from_env: true,
+        });
+        const listenerUrl = listener.url();
+        if (!listenerUrl) {
+          throw new Error('ngrok did not provide a public URL');
+        }
+        host = listenerUrl;
       } else {
         host = TelegramConfig.webhook.host;
       }
