@@ -12,6 +12,7 @@ export default defineConfig({
       '/api': 'http://localhost:3000',
       '/health': 'http://localhost:3000',
     },
+    allowedHosts: ['localhost', '6e22-185-131-178-157.ngrok-free.app'],
   },
   test: {
     environment: 'jsdom',
