@@ -23,6 +23,18 @@
       "recommended": true
     }
   },
+  "overrides": [
+    {
+      "includes": ["src/tg-app/web/styles.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
+      }
+    }
+  ],
   "assist": {
     "enabled": false
   }

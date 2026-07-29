@@ -10,8 +10,8 @@ export const UpdateController = async (ctx: TextContext) => {
 
   const regexp = /(\d+) (\D+)/;
   const matches = rankText.match(regexp);
-  const rankId = matches && matches[1] ? parseInt(matches[1], 10) : NaN;
-  const rankNextTitle = matches && matches[2] ? matches[2].trim() : '';
+  const rankId = matches?.[1] ? parseInt(matches[1], 10) : NaN;
+  const rankNextTitle = matches?.[2] ? matches[2].trim() : '';
 
   const rankDao = new RankDao();
   const changelogDao = new ChangelogDao();

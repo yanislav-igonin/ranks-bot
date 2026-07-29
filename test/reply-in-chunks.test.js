@@ -1,6 +1,6 @@
 require('ts-node/register');
 
-const assert = require('assert');
+const assert = require('node:assert');
 const { replyInChunks } = require('../src/controllers/reply-in-chunks');
 
 const LIMIT = 4096;

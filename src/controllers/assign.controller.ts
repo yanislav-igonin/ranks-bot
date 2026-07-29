@@ -13,9 +13,9 @@ export const AssignController = async (ctx: TextContext) => {
   const regexp = /(\d+) (\S+) ?(\D+)?/;
 
   const matches = assignText.match(regexp);
-  const rankId = matches && matches[1] ? parseInt(matches[1], 10) : NaN;
-  const rankUsername = matches && matches[2] ? matches[2].replace('@', '') : '';
-  const rankComment = matches && matches[3] ? matches[3] : '';
+  const rankId = matches?.[1] ? parseInt(matches[1], 10) : NaN;
+  const rankUsername = matches?.[2] ? matches[2].replace('@', '') : '';
+  const rankComment = matches?.[3] ?? '';
 
   const rankDao = new RankDao();
   const changelogDao = new ChangelogDao();

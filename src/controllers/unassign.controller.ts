@@ -13,8 +13,8 @@ export const UnassignController = async (ctx: TextContext) => {
   const regexp = /(\d+) (\S+)/;
 
   const matches = unassignText.match(regexp);
-  const rankId = matches && matches[1] ? parseInt(matches[1], 10) : NaN;
-  const rankUsername = matches && matches[2] ? matches[2].replace('@', '') : '';
+  const rankId = matches?.[1] ? parseInt(matches[1], 10) : NaN;
+  const rankUsername = matches?.[2] ? matches[2].replace('@', '') : '';
 
   const rankDao = new RankDao();
   const changelogDao = new ChangelogDao();
