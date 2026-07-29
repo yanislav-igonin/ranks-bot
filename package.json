@@ -12,6 +12,14 @@
   },
   "author": "Yanislav Igonin <yanislavdabest@gmail.com>",
   "license": "MIT",
+  "engines": {
+    "node": "22.x",
+    "npm": "10.x"
+  },
+  "volta": {
+    "node": "22.21.1",
+    "npm": "10.9.4"
+  },
   "dependencies": {
     "ngrok": "^3.4.0",
     "pg": "^8.5.1",
