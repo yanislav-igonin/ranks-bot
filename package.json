@@ -39,7 +39,7 @@
     "@types/pino": "^5.20.0",
     "dotenv": "17.4.2",
     "husky": "^1.3.1",
-    "nodemon": "^1.18.10",
+    "nodemon": "3.1.14",
     "telegram-typings": "^4.0.0-beta",
     "ts-node": "10.9.2",
     "typescript": "6.0.3"
