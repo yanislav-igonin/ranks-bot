@@ -52,6 +52,9 @@ npm run build
 npm start
 ```
 
+`npm start` forces `NODE_ENV=production`; do not set
+`DEV_TELEGRAM_USER_ID` in the production environment.
+
 `npm run build` creates `build/index.js` and `src/tg-app/dist/web`.
 
 Environment:

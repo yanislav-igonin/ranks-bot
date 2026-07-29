@@ -53,6 +53,9 @@ npm run build
 npm start
 ```
 
+`npm start` forces `NODE_ENV=production`; production must not set
+`DEV_TELEGRAM_USER_ID`.
+
 The root process exposes:
 
 - `GET /health` without authentication;

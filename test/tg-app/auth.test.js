@@ -127,7 +127,7 @@ test('requires Telegram authorization in production', () => {
   );
 });
 
-test('uses an allowlisted development identity outside production', () => {
+test('uses an allowlisted development identity in development', () => {
   const service = new TgAppService({
     dao,
     environment: 'development',
@@ -142,6 +142,19 @@ test('never accepts the development identity in production', () => {
     dao,
     botToken: TOKEN,
     environment: 'production',
+    devTelegramUserId: 546166718,
+  });
+
+  assert.throws(
+    () => service.authenticate(undefined, NOW_SECONDS),
+    new TgAppError(401, 'Telegram authorization is required'),
+  );
+});
+
+test('accepts the development identity only in development', () => {
+  const service = new TgAppService({
+    dao,
+    environment: 'test',
     devTelegramUserId: 546166718,
   });
 

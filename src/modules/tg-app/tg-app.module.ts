@@ -129,7 +129,7 @@ export const createTgAppModule = ({
         return;
       }
 
-      if (url.pathname.startsWith('/api/')) {
+      if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
         const body = method === 'POST' ? await readJsonBody(request) : undefined;
         const result = await controller.dispatch({
           method,

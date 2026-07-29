@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "start": "node build/index.js",
+    "start": "NODE_ENV=production node build/index.js",
     "dev": "nodemon -r dotenv/config --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
     "test": "npm run test:unit && npm --prefix src/tg-app test",
     "test:unit": "node test/reply-in-chunks.test.js && node --test test/tg-app/*.test.js",

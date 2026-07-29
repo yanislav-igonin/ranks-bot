@@ -97,7 +97,7 @@ export class TgAppService {
   ): TelegramUser {
     let user: TelegramUser;
 
-    if (this.environment !== 'production' && !authorization) {
+    if (this.environment === 'development' && !authorization) {
       const fixedUser = FIXED_USERS.find(({ id }) => id === this.devTelegramUserId);
       if (!fixedUser) {
         throw new TgAppError(401, 'User is not allowed');

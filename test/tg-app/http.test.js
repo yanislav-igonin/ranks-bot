@@ -173,6 +173,14 @@ test('unknown API paths return JSON 404', async () => {
   assert.deepEqual(await response.json(), { error: 'Not found' });
 });
 
+test('exact API root returns JSON 404 instead of the SPA', async () => {
+  const response = await fetch(`${baseUrl}/api`);
+
+  assert.equal(response.status, 404);
+  assert.match(response.headers.get('content-type'), /^application\/json/);
+  assert.deepEqual(await response.json(), { error: 'Not found' });
+});
+
 test('serves static assets with MIME types and falls back to the SPA', async () => {
   const asset = await fetch(`${baseUrl}/app.css`);
   const navigation = await fetch(`${baseUrl}/friends/546166718`);

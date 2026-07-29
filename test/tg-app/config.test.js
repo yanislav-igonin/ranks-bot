@@ -43,3 +43,9 @@ test('rejects an invalid port', () => {
   process.env.TG_APP_PORT = 'nope';
   assert.throws(() => loadConfig(), /TG_APP_PORT must be an integer/);
 });
+
+test('production start forces the production environment', () => {
+  const { start } = require('../../package.json').scripts;
+
+  assert.match(start, /NODE_ENV=production/);
+});
