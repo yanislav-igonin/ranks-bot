@@ -1,20 +1,7 @@
-import { MessageEntity } from 'telegram-typings';
+import type { Context, NarrowedContext } from 'telegraf';
+import type { Message, Update } from 'telegraf/types';
 
-import {
-  UserMessage,
-  UserUpdate,
-  UserContext,
-} from './UserContext';
-
-interface TextMessage extends UserMessage {
-  entities: MessageEntity[];
-  text: string;
-}
-
-interface TextUpdate extends UserUpdate {
-  message: TextMessage;
-}
-
-export interface TextContext extends UserContext {
-  update: TextUpdate;
-}
+export type TextContext = NarrowedContext<
+  Context,
+  Update.MessageUpdate<Message.TextMessage>
+>;

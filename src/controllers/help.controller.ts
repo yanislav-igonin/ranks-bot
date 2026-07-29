@@ -1,4 +1,4 @@
-import { TextContext } from '../modules/bot/interfaces';
+import type { TextContext } from '../modules/bot/interfaces';
 import { HelpService } from '../services';
 
 export const HelpController = async (ctx: TextContext) => {

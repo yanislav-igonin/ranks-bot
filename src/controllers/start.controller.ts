@@ -1,4 +1,4 @@
-import { Context } from 'telegraf';
+import type { Context } from 'telegraf';
 
 export const StartController = async (ctx: Context) => {
   await ctx.reply('Здорова, бандиты');

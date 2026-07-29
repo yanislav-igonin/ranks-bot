@@ -1,6 +1,9 @@
+import type { RankDao, RankToUserDao } from '../modules/db/dao';
 import { ListResponse } from '../responses';
-import { ListResponseData, ListResponseRankData } from '../responses/list.response';
-import { RankToUserDao, RankDao } from '../modules/db/dao';
+import type {
+  ListResponseData,
+  ListResponseRankData,
+} from '../responses/list.response';
 
 interface ListServiceData {
   dao: { rankToUser: RankToUserDao; rank: RankDao };
@@ -17,11 +20,12 @@ export class ListService {
     const ranksToUsers = await this.dao.rankToUser.getRanksToUsers();
     const assignedRanksIds = ranksToUsers.map((rtu): number => rtu.rank.id);
     const allRanks = await this.dao.rank.getRanks();
-    const unassignedRanks = allRanks
-      .filter((rank): boolean => !assignedRanksIds.includes(rank.id));
+    const unassignedRanks = allRanks.filter(
+      (rank): boolean => !assignedRanksIds.includes(rank.id),
+    );
 
-    const usersRanks = ranksToUsers
-      .reduce((acc: ListResponseData, rtu): ListResponseData => {
+    const usersRanks = ranksToUsers.reduce(
+      (acc: ListResponseData, rtu): ListResponseData => {
         if (acc[rtu.user.username] === undefined) {
           acc[rtu.user.username] = [];
         }
@@ -34,14 +38,18 @@ export class ListService {
         });
 
         return acc;
-      }, {});
+      },
+      {},
+    );
 
-    usersRanks.toPlay = unassignedRanks.map((rank): ListResponseRankData => ({
-      rankId: rank.id,
-      rankTitle: rank.title,
-      comment: '',
-      count: 0,
-    }));
+    usersRanks.toPlay = unassignedRanks.map(
+      (rank): ListResponseRankData => ({
+        rankId: rank.id,
+        rankTitle: rank.title,
+        comment: '',
+        count: 0,
+      }),
+    );
 
     const response = new ListResponse(usersRanks);
 

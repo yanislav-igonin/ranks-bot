@@ -1,12 +1,10 @@
-import { TextContext } from '../modules/bot/interfaces';
+import type { TextContext } from '../modules/bot/interfaces';
+import { ChangelogDao, RankDao, RankToUserDao, UserDao } from '../modules/db/dao';
 import { AssignService } from '../services';
-import {
-  RankDao, ChangelogDao, RankToUserDao, UserDao,
-} from '../modules/db/dao';
 
 export const AssignController = async (ctx: TextContext) => {
   const assignText = ctx.update.message.text.slice(
-    ctx.update.message.entities[0].length + 1,
+    (ctx.update.message.entities?.[0]?.length ?? 0) + 1,
     ctx.update.message.text.length,
   );
 
@@ -15,9 +13,9 @@ export const AssignController = async (ctx: TextContext) => {
   const regexp = /(\d+) (\S+) ?(\D+)?/;
 
   const matches = assignText.match(regexp);
-  const rankId = matches && matches[1] ? parseInt(matches[1], 10) : NaN;
-  const rankUsername = matches && matches[2] ? matches[2].replace('@', '') : '';
-  const rankComment = matches && matches[3] ? matches[3] : '';
+  const rankId = matches?.[1] ? parseInt(matches[1], 10) : NaN;
+  const rankUsername = matches?.[2] ? matches[2].replace('@', '') : '';
+  const rankComment = matches?.[3] ?? '';
 
   const rankDao = new RankDao();
   const changelogDao = new ChangelogDao();

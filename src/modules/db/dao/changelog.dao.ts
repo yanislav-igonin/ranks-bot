@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import type { Repository } from 'typeorm';
 import { DbModule } from '../db.module';
 import { ChangelogEntity } from '../entities';
 
@@ -26,9 +26,7 @@ export class ChangelogDao {
   }
 
   async createChangelog(data: CreateChangelogData) {
-    const {
-      type, userId, table, objectId, previousValue, currentValue,
-    } = data;
+    const { type, userId, table, objectId, previousValue, currentValue } = data;
 
     await this.repository.save({
       type,
@@ -42,7 +40,7 @@ export class ChangelogDao {
 
   async getChangelogs() {
     const changelogs = await this.repository.find({
-      relations: ['user'],
+      relations: { user: true },
     });
 
     return changelogs;

@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import type { Repository } from 'typeorm';
 import { DbModule } from '../db.module';
 import { UserEntity } from '../entities';
 
@@ -15,9 +15,11 @@ export class UserDao {
   }
 
   async getUserByUsername({ username }: { username: string }) {
-    const user = await this.repository.findOne({ username });
+    const user = await this.repository.findOneBy({ username });
 
-    if (user === undefined) { return null; }
+    if (user === null) {
+      return null;
+    }
 
     return user;
   }

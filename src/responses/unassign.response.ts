@@ -9,9 +9,7 @@ export class UnassignResponse {
   text: string;
 
   constructor(data: UnassignResponseData) {
-    const {
-      rankId, rankTitle, username, rankCount,
-    } = data;
+    const { rankId, rankTitle, username, rankCount } = data;
 
     if (rankCount) {
       this.text = `Повторно аннулировано звание @${username}: ${rankTitle}, счетчик - ${rankCount}, ID - ${rankId}`;

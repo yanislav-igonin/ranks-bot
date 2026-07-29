@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import type { Repository } from 'typeorm';
 import { DbModule } from '../db.module';
 import { RankEntity } from '../entities';
 
@@ -15,9 +15,11 @@ export class RankDao {
   }
 
   async getRank({ id }: { id: number }) {
-    const rank = await this.repository.findOne(id);
+    const rank = await this.repository.findOneBy({ id });
 
-    if (rank === undefined) { return null; }
+    if (rank === null) {
+      return null;
+    }
 
     return rank;
   }

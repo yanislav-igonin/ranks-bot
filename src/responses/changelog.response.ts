@@ -40,8 +40,9 @@ export class ChangelogResponse {
         this.text = this.text.concat('Изменено:\n');
 
         for (const updatedElem of changesForDate.updated) {
-          this.text = this.text
-            .concat(`${updatedElem.previousValue} -> ${updatedElem.currentValue}\n`);
+          this.text = this.text.concat(
+            `${updatedElem.previousValue} -> ${updatedElem.currentValue}\n`,
+          );
         }
 
         this.text = this.text.concat('\n');
@@ -74,8 +75,9 @@ export class ChangelogResponse {
           if (unassignedElem.currentValue === '') {
             this.text = this.text.concat(`${unassignedElem.previousValue}\n`);
           } else {
-            this.text = this.text
-              .concat(`${unassignedElem.previousValue} -> ${unassignedElem.currentValue}\n`);
+            this.text = this.text.concat(
+              `${unassignedElem.previousValue} -> ${unassignedElem.currentValue}\n`,
+            );
           }
         }
 

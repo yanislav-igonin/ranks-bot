@@ -1,5 +1,5 @@
+import type { ChangelogDao, RankDao } from '../modules/db/dao';
 import { DeleteResponse } from '../responses';
-import { RankDao, ChangelogDao } from '../modules/db/dao';
 
 interface DeleteServiceData {
   user: { id: number };

@@ -1,25 +1,25 @@
-import Telegraf from 'telegraf';
-import * as ngrok from 'ngrok';
+import ngrok from '@ngrok/ngrok';
+import { Telegraf } from 'telegraf';
 
 import * as Config from '../../config';
-import { LoggerModule } from '../logger.module';
 import {
-  StartController,
   AddController,
   AssignController,
+  ChangelogController,
   DeleteController,
   HelpController,
   ListController,
+  StartController,
   UnassignController,
   UpdateController,
-  ChangelogController,
 } from '../../controllers';
-
-import { TextContext } from './interfaces/index';
 import { AuthMiddleware } from '../../middlewares';
+import { LoggerModule } from '../logger.module';
+import type { TextContext } from './interfaces/index';
 
 class BotModule {
   private config: typeof Config;
+  private bot?: Telegraf<TextContext>;
 
   constructor(config: typeof Config) {
     this.config = config;
@@ -29,8 +29,9 @@ class BotModule {
     const { AppConfig, TelegramConfig } = this.config;
 
     const bot = new Telegraf<TextContext>(TelegramConfig.token);
+    this.bot = bot;
 
-    bot.catch((err: Error): void => {
+    bot.catch((err): void => {
       LoggerModule.error(`ERROR: ${err}\n`);
     });
 
@@ -49,7 +50,8 @@ class BotModule {
     });
     bot.command(['changelog', 'changelog@RanksBot'], ChangelogController);
     bot.on('text', async (ctx): Promise<void> => {
-      if (ctx.update.message.text.toLowerCase().split(' ').includes('да')) { // TODO: переделать в регулярку
+      if (ctx.update.message.text.toLowerCase().split(' ').includes('да')) {
+        // TODO: переделать в регулярку
         await ctx.reply('пизда');
       }
     });
@@ -57,9 +59,16 @@ class BotModule {
     if (TelegramConfig.webhook.isEnabled) {
       let host: string;
       if (AppConfig.env === 'development') {
-        host = await ngrok.connect(TelegramConfig.webhook.port);
+        const listener = await ngrok.forward({
+          addr: TelegramConfig.webhook.port,
+          authtoken_from_env: true,
+        });
+        const listenerUrl = listener.url();
+        if (!listenerUrl) {
+          throw new Error('ngrok did not provide a public URL');
+        }
+        host = listenerUrl;
       } else {
-      // eslint-disable-next-line prefer-destructuring
         host = TelegramConfig.webhook.host;
       }
 
@@ -79,7 +88,7 @@ class BotModule {
       }
     } else {
       await bot.telegram.deleteWebhook();
-      bot.startPolling();
+      await bot.launch();
 
       if (AppConfig.env === 'production') {
         await bot.telegram.sendMessage(
@@ -88,6 +97,12 @@ class BotModule {
         );
       }
     }
+  }
+
+  async close(reason = 'application shutdown'): Promise<void> {
+    const bot = this.bot;
+    this.bot = undefined;
+    bot?.stop(reason);
   }
 }
 

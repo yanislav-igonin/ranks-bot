@@ -1,7 +1,10 @@
-import { UnassignResponse } from '../responses';
-import {
-  RankDao, ChangelogDao, RankToUserDao, UserDao,
+import type {
+  ChangelogDao,
+  RankDao,
+  RankToUserDao,
+  UserDao,
 } from '../modules/db/dao';
+import { UnassignResponse } from '../responses';
 
 interface UnassignServiceData {
   user: { id: number };
@@ -65,11 +68,10 @@ export class UnassignService {
     }
 
     if (assignedRank.count > 1) {
-      await this.dao
-        .rankToUser.decreaseRankCounter({
-          userId: userToUnassign.id,
-          rankId: rankToUnassign.id,
-        });
+      await this.dao.rankToUser.decreaseRankCounter({
+        userId: userToUnassign.id,
+        rankId: rankToUnassign.id,
+      });
 
       await this.dao.changelog.createChangelog({
         userId: this.user.id,

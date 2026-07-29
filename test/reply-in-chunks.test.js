@@ -1,9 +1,7 @@
 require('ts-node/register');
 
-const assert = require('assert');
-const {
-  replyInChunks,
-} = require('../src/controllers/reply-in-chunks');
+const assert = require('node:assert');
+const { replyInChunks } = require('../src/controllers/reply-in-chunks');
 
 const LIMIT = 4096;
 
@@ -19,11 +17,14 @@ const test = async (name, run) => {
 
 const repliesFor = async (text) => {
   const replies = [];
-  await replyInChunks({
-    reply: async (chunk) => {
-      replies.push(chunk);
+  await replyInChunks(
+    {
+      reply: async (chunk) => {
+        replies.push(chunk);
+      },
     },
-  }, text);
+    text,
+  );
   return replies;
 };
 
@@ -36,19 +37,16 @@ const repliesFor = async (text) => {
     const firstLine = 'a'.repeat(4000);
     const secondLine = 'b'.repeat(200);
 
-    assert.deepStrictEqual(
-      await repliesFor(`${firstLine}\n${secondLine}`),
-      [firstLine, secondLine],
-    );
+    assert.deepStrictEqual(await repliesFor(`${firstLine}\n${secondLine}`), [
+      firstLine,
+      secondLine,
+    ]);
   });
 
   await test('hard-splits a line longer than Telegram limit', async () => {
     const text = 'a'.repeat(LIMIT + 1);
 
-    assert.deepStrictEqual(
-      await repliesFor(text),
-      ['a'.repeat(LIMIT), 'a'],
-    );
+    assert.deepStrictEqual(await repliesFor(text), ['a'.repeat(LIMIT), 'a']);
   });
 
   await test('does not send empty chunks at a boundary newline', async () => {
@@ -63,14 +61,17 @@ const repliesFor = async (text) => {
     const firstReply = new Promise((resolve) => {
       releaseFirst = resolve;
     });
-    const sending = replyInChunks({
-      reply: async (chunk) => {
-        calls.push(chunk);
-        if (calls.length === 1) {
-          await firstReply;
-        }
+    const sending = replyInChunks(
+      {
+        reply: async (chunk) => {
+          calls.push(chunk);
+          if (calls.length === 1) {
+            await firstReply;
+          }
+        },
       },
-    }, `${'a'.repeat(LIMIT)}b`);
+      `${'a'.repeat(LIMIT)}b`,
+    );
 
     await Promise.resolve();
     assert.deepStrictEqual(calls, ['a'.repeat(LIMIT)]);
@@ -85,12 +86,15 @@ const repliesFor = async (text) => {
     const expectedError = new Error('Telegram unavailable');
 
     await assert.rejects(
-      replyInChunks({
-        reply: async (chunk) => {
-          calls.push(chunk);
-          throw expectedError;
+      replyInChunks(
+        {
+          reply: async (chunk) => {
+            calls.push(chunk);
+            throw expectedError;
+          },
         },
-      }, `${'a'.repeat(LIMIT)}b`),
+        `${'a'.repeat(LIMIT)}b`,
+      ),
       expectedError,
     );
     assert.deepStrictEqual(calls, ['a'.repeat(LIMIT)]);

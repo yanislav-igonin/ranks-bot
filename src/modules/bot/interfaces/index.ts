@@ -1,5 +1,1 @@
-import { TextContext } from './TextContext';
-
-export {
-  TextContext,
-};
+export type { TextContext } from './TextContext';

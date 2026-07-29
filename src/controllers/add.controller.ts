@@ -1,10 +1,10 @@
-import { TextContext } from '../modules/bot/interfaces';
+import type { TextContext } from '../modules/bot/interfaces';
+import { ChangelogDao, RankDao } from '../modules/db/dao';
 import { AddService } from '../services';
-import { RankDao, ChangelogDao } from '../modules/db/dao';
 
 export const AddController = async (ctx: TextContext) => {
   const rankTitle = ctx.update.message.text.slice(
-    ctx.update.message.entities[0].length + 1,
+    (ctx.update.message.entities?.[0]?.length ?? 0) + 1,
     ctx.update.message.text.length,
   );
 

@@ -1,12 +1,17 @@
-import { MigrationInterface, getRepository } from 'typeorm';
-import { UserEntity, RankEntity, RankToUserEntity } from '../entities';
+import { In } from 'typeorm';
+import type { MigrationInterface, QueryRunner } from 'typeorm';
+import { RankEntity, RankToUserEntity, UserEntity } from '../entities';
 
 export class SeedInitialData1594905684546 implements MigrationInterface {
-  private users: {id: number; username: string}[];
+  private users: { id: number; username: string }[];
 
-  private ranks: {id: number; title: string}[];
+  private ranks: { id: number; title: string }[];
 
-  private ranksToUsers: {user: {id: number}; rank: {id: number}; count?: number}[];
+  private ranksToUsers: {
+    user: { id: number };
+    rank: { id: number };
+    count?: number;
+  }[];
 
   constructor() {
     this.users = [
@@ -181,31 +186,30 @@ export class SeedInitialData1594905684546 implements MigrationInterface {
     ];
   }
 
-
-  async up() {
-    const userRepository = getRepository(UserEntity);
+  async up(queryRunner: QueryRunner) {
+    const userRepository = queryRunner.manager.getRepository(UserEntity);
     await userRepository.save(this.users);
 
-    const rankRepository = getRepository(RankEntity);
+    const rankRepository = queryRunner.manager.getRepository(RankEntity);
     await rankRepository.save(this.ranks);
 
-    const rankToUserRepository = getRepository(RankToUserEntity);
+    const rankToUserRepository = queryRunner.manager.getRepository(RankToUserEntity);
     await rankToUserRepository.save(this.ranksToUsers);
   }
 
-  async down() {
-    const userRepository = getRepository(UserEntity);
-    const userIds = this.users.map((u): number => u.id);
-    const users = await userRepository.findByIds(userIds);
-    await userRepository.remove(users);
-
-    const rankRepository = getRepository(RankEntity);
-    const rankIds = this.ranks.map((r): number => r.id);
-    const ranks = await rankRepository.findByIds(rankIds);
-    await rankRepository.remove(ranks);
-
-    const rankToUserRepository = getRepository(RankEntity);
+  async down(queryRunner: QueryRunner) {
+    const rankToUserRepository = queryRunner.manager.getRepository(RankToUserEntity);
     const ranksToUsers = await rankToUserRepository.find();
     await rankToUserRepository.remove(ranksToUsers);
+
+    const userRepository = queryRunner.manager.getRepository(UserEntity);
+    const userIds = this.users.map((u): number => u.id);
+    const users = await userRepository.findBy({ id: In(userIds) });
+    await userRepository.remove(users);
+
+    const rankRepository = queryRunner.manager.getRepository(RankEntity);
+    const rankIds = this.ranks.map((r): number => r.id);
+    const ranks = await rankRepository.findBy({ id: In(rankIds) });
+    await rankRepository.remove(ranks);
   }
 }

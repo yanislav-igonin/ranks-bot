@@ -1,11 +1,6 @@
-import {
-  Entity, PrimaryColumn, Column, CreateDateColumn, OneToMany,
-} from 'typeorm';
-
-// eslint-disable-next-line import/no-cycle
-import { RankToUserEntity } from './rank-to-user.entity';
-// eslint-disable-next-line import/no-cycle
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { ChangelogEntity } from './changelog.entity';
+import { RankToUserEntity } from './rank-to-user.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -18,9 +13,15 @@ export class UserEntity {
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  @OneToMany(() => RankToUserEntity, (rankToUser) => rankToUser.user)
+  @OneToMany(
+    () => RankToUserEntity,
+    (rankToUser) => rankToUser.user,
+  )
   rankToUsers!: RankToUserEntity[];
 
-  @OneToMany(() => ChangelogEntity, (changelog) => changelog.user)
+  @OneToMany(
+    () => ChangelogEntity,
+    (changelog) => changelog.user,
+  )
   changelogs!: ChangelogEntity[];
 }
