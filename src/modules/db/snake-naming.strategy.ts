@@ -1,5 +1,5 @@
 import { DefaultNamingStrategy } from 'typeorm';
-import { snakeCase } from 'typeorm/util/StringUtils';
+import { snakeCase } from 'typeorm/util/StringUtils.js';
 
 export class SnakeNamingStrategy extends DefaultNamingStrategy {
   tableName(className: string, customName: string | undefined): string {
