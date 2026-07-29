@@ -18,6 +18,7 @@ const apiState = {
 
 const service = {
   assignCalls: [],
+  mutationCalls: [],
   async getState(authorization) {
     if (authorization === 'tma rejected') {
       throw new TgAppError(401, 'User is not allowed');
@@ -27,7 +28,7 @@ const service = {
     }
     return apiState;
   },
-  async assign(authorization, rankId, recipientId) {
+  async assign(authorization, rankId, recipientId, comment) {
     if (!Number.isInteger(rankId) || !Number.isInteger(recipientId)) {
       throw new TgAppError(400, 'Invalid assignment');
     }
@@ -35,13 +36,26 @@ const service = {
     if (rankId === 409) {
       throw new TgAppError(409, 'Rank is already assigned');
     }
-    this.assignCalls.push([authorization, rankId, recipientId]);
+    this.assignCalls.push([authorization, rankId, recipientId, comment]);
+    return apiState;
+  },
+  async createRank(authorization, title) {
+    this.mutationCalls.push(['create', authorization, title]);
+    return apiState;
+  },
+  async deleteRank(authorization, rankId) {
+    this.mutationCalls.push(['delete', authorization, rankId]);
+    return apiState;
+  },
+  async unassign(authorization, assignmentId) {
+    this.mutationCalls.push(['unassign', authorization, assignmentId]);
     return apiState;
   },
 };
 
 let tgAppModule;
 let baseUrl;
+let listeningPort;
 let staticDirectory;
 const loggedErrors = [];
 
@@ -53,7 +67,6 @@ before(async () => {
   );
   await writeFile(path.join(staticDirectory, 'app.css'), 'body { color: red; }');
 
-  let listeningPort;
   tgAppModule = createTgAppModule({
     controller: new TgAppController(service),
     port: 0,
@@ -93,11 +106,54 @@ test('assignment passes route id, body user id, and auth header', async () => {
       authorization: 'tma signed-data',
       'content-type': 'application/json',
     },
+    body: JSON.stringify({ userId: 546166718, comment: 'За лучший подгон' }),
+  });
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(service.assignCalls, [
+    ['tma signed-data', 65, 546166718, 'За лучший подгон'],
+  ]);
+});
+
+test('assignment treats an omitted optional comment as empty', async () => {
+  const response = await fetch(`${baseUrl}/api/ranks/66/assign`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ userId: 546166718 }),
   });
 
   assert.equal(response.status, 200);
-  assert.deepEqual(service.assignCalls, [['tma signed-data', 65, 546166718]]);
+  assert.deepEqual(service.assignCalls.at(-1), [undefined, 66, 546166718, '']);
+});
+
+test('routes rank creation, rank deletion, and assignment removal', async () => {
+  const headers = {
+    authorization: 'tma signed-data',
+    'content-type': 'application/json',
+  };
+  const created = await fetch(`${baseUrl}/api/ranks`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ title: 'Повелитель тапок' }),
+  });
+  const deleted = await fetch(`${baseUrl}/api/ranks/65`, {
+    method: 'DELETE',
+    headers,
+  });
+  const unassigned = await fetch(`${baseUrl}/api/assignments/91`, {
+    method: 'DELETE',
+    headers,
+  });
+
+  assert.deepEqual(
+    [created.status, deleted.status, unassigned.status],
+    [200, 200, 200],
+  );
+  assert.deepEqual(service.mutationCalls, [
+    ['create', 'tma signed-data', 'Повелитель тапок'],
+    ['delete', 'tma signed-data', 65],
+    ['unassign', 'tma signed-data', 91],
+  ]);
 });
 
 test('rejects malformed JSON and bodies over 8 KiB', async () => {
@@ -212,5 +268,5 @@ test('rejects path traversal', async () => {
 });
 
 test('launch and close are idempotent', async () => {
-  await tgAppModule.launch();
+  assert.equal(await tgAppModule.launch(), listeningPort);
 });

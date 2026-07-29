@@ -79,10 +79,23 @@ const request = async <ResponseBody,>(
 
 const api: ApiClient = {
   getState: () => request('/api/state'),
-  assign: (rankId, userId) =>
+  assign: (rankId, userId, comment) =>
     request(`/api/ranks/${rankId}/assign`, {
       method: 'POST',
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ userId, comment }),
+    }),
+  createRank: (title) =>
+    request('/api/ranks', {
+      method: 'POST',
+      body: JSON.stringify({ title }),
+    }),
+  deleteRank: (rankId) =>
+    request(`/api/ranks/${rankId}`, {
+      method: 'DELETE',
+    }),
+  unassign: (assignmentId) =>
+    request(`/api/assignments/${assignmentId}`, {
+      method: 'DELETE',
     }),
 };
 

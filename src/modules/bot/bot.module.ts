@@ -79,24 +79,17 @@ class BotModule {
           port: TelegramConfig.webhook.port,
         },
       });
-
-      if (AppConfig.env === 'production') {
-        await bot.telegram.sendMessage(
-          -1001230506485,
-          `Стартую ебать, релиз - ${AppConfig.release}`,
-        );
-      }
     } else {
       await bot.telegram.deleteWebhook();
       await bot.launch();
-
-      if (AppConfig.env === 'production') {
-        await bot.telegram.sendMessage(
-          -1001230506485,
-          `Стартую ебать, релиз - ${AppConfig.release}`,
-        );
-      }
     }
+  }
+
+  async sendGroupMessage(text: string): Promise<void> {
+    if (!this.bot) {
+      throw new Error('Telegram bot is not running');
+    }
+    await this.bot.telegram.sendMessage(-1001230506485, text);
   }
 
   async close(reason = 'application shutdown'): Promise<void> {

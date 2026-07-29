@@ -91,7 +91,7 @@ test('returns unassigned ranks and existing assignments', async () => {
   await dataSource.getRepository(RankToUserEntity).save({
     rank,
     user,
-    comment: '',
+    comment: 'Сломал диван',
     count: 1,
   });
 
@@ -104,6 +104,8 @@ test('returns unassigned ranks and existing assignments', async () => {
   assert.equal(state.assignments.length, 1);
   assert.equal(state.assignments[0].rank.id, 66);
   assert.equal(state.assignments[0].user.id, 546166718);
+  assert.equal(state.assignments[0].comment, 'Сломал диван');
+  assert.ok(state.assignments[0].createdAt instanceof Date);
 });
 
 test('writes an assignment and authenticated actor changelog', async () => {
@@ -111,6 +113,7 @@ test('writes an assignment and authenticated actor changelog', async () => {
     rankId: 65,
     recipientId: 546166718,
     actorId: 142166671,
+    comment: 'За лучший подгон',
   });
 
   const assignments = await dataSource
@@ -123,6 +126,7 @@ test('writes an assignment and authenticated actor changelog', async () => {
   assert.equal(assignments.length, 1);
   assert.equal(assignments[0].rank.id, 65);
   assert.equal(assignments[0].user.id, 546166718);
+  assert.equal(assignments[0].comment, 'За лучший подгон');
   assert.equal(changelogs.length, 1);
   assert.equal(changelogs[0].user.id, 142166671);
   assert.equal(changelogs[0].objectId, assignments[0].id);
@@ -135,6 +139,7 @@ test('rejects a missing rank', async () => {
       rankId: 999,
       recipientId: 546166718,
       actorId: 142166671,
+      comment: '',
     }),
     (error) => error.status === 404 && error.message === 'Rank not found',
   );
@@ -146,6 +151,7 @@ test('rejects an already assigned rank', async () => {
     rankId: 65,
     recipientId: 546166718,
     actorId: 142166671,
+    comment: '',
   });
 
   await assert.rejects(
@@ -153,6 +159,7 @@ test('rejects an already assigned rank', async () => {
       rankId: 65,
       recipientId: 383288860,
       actorId: 142166671,
+      comment: '',
     }),
     (error) => error.status === 409 && error.message === 'Rank is already assigned',
   );
@@ -165,11 +172,13 @@ test('allows exactly one concurrent assignment for a rank', async () => {
       rankId: 65,
       recipientId: 546166718,
       actorId: 142166671,
+      comment: '',
     }),
     dao.assignRank({
       rankId: 65,
       recipientId: 383288860,
       actorId: 142166671,
+      comment: '',
     }),
   ]);
 
@@ -177,4 +186,112 @@ test('allows exactly one concurrent assignment for a rank', async () => {
   const rejection = results.find(({ status }) => status === 'rejected');
   assert.equal(rejection.reason.status, 409);
   assert.equal(await dataSource.getRepository(RankToUserEntity).count(), 1);
+});
+
+test('returns assignments newest first', async () => {
+  const rankRepository = dataSource.getRepository(RankEntity);
+  const user = await dataSource.getRepository(UserEntity).findOneByOrFail({
+    id: 546166718,
+  });
+  const [olderRank, newerRank] = await Promise.all([
+    rankRepository.findOneByOrFail({ id: 65 }),
+    rankRepository.findOneByOrFail({ id: 66 }),
+  ]);
+  await dataSource.getRepository(RankToUserEntity).save([
+    {
+      rank: olderRank,
+      user,
+      comment: 'Раньше',
+      count: 1,
+      createdAt: new Date('2026-07-28T10:00:00.000Z'),
+    },
+    {
+      rank: newerRank,
+      user,
+      comment: 'Позже',
+      count: 1,
+      createdAt: new Date('2026-07-29T10:00:00.000Z'),
+    },
+  ]);
+
+  const state = await new TgAppDao(dataSource).getState();
+
+  assert.deepEqual(
+    state.assignments.map(({ comment }) => comment),
+    ['Позже', 'Раньше'],
+  );
+});
+
+test('creates and deletes a free rank with changelog entries', async () => {
+  const dao = new TgAppDao(dataSource);
+  const rank = await dao.createRank({
+    title: 'Повелитель тапок',
+    actorId: 142166671,
+  });
+  await dao.deleteRank({ rankId: rank.id, actorId: 383288860 });
+
+  assert.equal(
+    await dataSource.getRepository(RankEntity).findOneBy({ id: rank.id }),
+    null,
+  );
+  const changelogs = await dataSource.getRepository(ChangelogEntity).find({
+    where: { objectId: rank.id, table: 'ranks' },
+    order: { id: 'ASC' },
+  });
+  assert.deepEqual(
+    changelogs.map(({ type }) => type),
+    ['insert', 'delete'],
+  );
+});
+
+test('rejects deleting an assigned rank', async () => {
+  const dao = new TgAppDao(dataSource);
+  await dao.assignRank({
+    rankId: 65,
+    recipientId: 546166718,
+    actorId: 142166671,
+    comment: '',
+  });
+
+  await assert.rejects(
+    dao.deleteRank({ rankId: 65, actorId: 142166671 }),
+    (error) =>
+      error.status === 409 && error.message === 'Assigned rank cannot be deleted',
+  );
+});
+
+test('removes an assignment and records who removed it', async () => {
+  const dao = new TgAppDao(dataSource);
+  await dao.assignRank({
+    rankId: 65,
+    recipientId: 546166718,
+    actorId: 142166671,
+    comment: 'Ошибка',
+  });
+  const assignment = await dataSource
+    .getRepository(RankToUserEntity)
+    .findOneByOrFail({ rank: { id: 65 } });
+
+  const removed = await dao.unassignRank({
+    assignmentId: assignment.id,
+    actorId: 383288860,
+  });
+
+  assert.equal(removed.rank.title, 'Кукурузный макрогол');
+  assert.equal(removed.user.username, 'Noeter');
+  assert.equal(
+    await dataSource
+      .getRepository(RankToUserEntity)
+      .findOneBy({ id: assignment.id }),
+    null,
+  );
+  const changelog = await dataSource.getRepository(ChangelogEntity).findOneOrFail({
+    where: {
+      type: 'delete',
+      table: 'ranks_to_users',
+      objectId: assignment.id,
+    },
+    relations: { user: true },
+  });
+  assert.equal(changelog.user.id, 383288860);
 });
