@@ -1,17 +1,10 @@
 # Ranks Telegram Mini App
 
-Standalone Telegram Mini App for assigning unclaimed ranks to the three seeded
-players. It uses the existing PostgreSQL tables but does not import, start, or
-modify the legacy bot.
+React/Vite frontend for assigning unclaimed ranks. The root bot process serves
+the built frontend and API through the existing TypeORM database connection.
+This directory does not contain or deploy a standalone backend.
 
-## Requirements
-
-- Node.js 22 or newer
-- PostgreSQL database used by the existing ranks bot
-- HTTPS URL for Telegram
-- Existing `BOT_TOKEN`
-
-The eligible Telegram accounts are fixed in `contract.ts`:
+## Fixed users
 
 | ID | Username |
 | ---: | --- |
@@ -21,125 +14,62 @@ The eligible Telegram accounts are fixed in `contract.ts`:
 
 ## Local development
 
-Install the isolated package:
+From the repository root, start PostgreSQL and the bot/API:
 
 ```bash
-cd src/tg-app
-npm install
-```
-
-Start client and API together:
-
-```bash
-DB_URL=postgres://user:password@localhost:5432/ranks_bot npm run dev
-```
-
-Vite opens the client at `http://localhost:5173` and proxies `/api` to the API
-at `http://localhost:3000`.
-
-Outside Telegram, development requests use Telegram ID `142166671`. Override
-it with another allowlisted ID:
-
-```bash
-DEV_TELEGRAM_USER_ID=546166718 \
-DB_URL=postgres://user:password@localhost:5432/ranks_bot \
+docker compose up -d postgres
 npm run dev
 ```
 
-`DEV_TELEGRAM_USER_ID` is ignored when `NODE_ENV=production`.
+In a second terminal, start Vite:
+
+```bash
+npm --prefix src/tg-app run dev
+```
+
+Vite serves `http://localhost:5173` and proxies `/api` and `/health` to the
+root process at `http://localhost:3000`. Set `DEV_TELEGRAM_USER_ID` on the root
+process to one of the three IDs when developing outside Telegram. Production
+never accepts this bypass.
 
 ## Verification
 
 ```bash
+npm run check
 npm test
-npm run typecheck
-npm run lint
 npm run build
 ```
 
-The production artifacts are:
-
-- `dist/server/server.js`
-- `dist/server/contract.js`
-- `dist/web/index.html`
-- `dist/web/assets/*`
+The only production artifact owned by this package is `dist/web`.
 
 ## Production
 
-Required environment:
-
-```bash
-NODE_ENV=production
-BOT_TOKEN=123456:telegram-bot-token
-DB_URL=postgres://user:password@postgres:5432/ranks_bot
-PORT=3000
-```
-
-Build and start:
+Install and build from the repository root:
 
 ```bash
 npm ci
+npm --prefix src/tg-app ci
 npm run build
 npm start
 ```
 
-Or build the package-local container:
+The root process exposes:
 
-```bash
-docker build -t ranks-tg-app .
-docker run --rm -p 3000:3000 \
-  -e NODE_ENV=production \
-  -e BOT_TOKEN \
-  -e DB_URL \
-  ranks-tg-app
-```
+- `GET /health` without authentication;
+- `GET /api/state`;
+- `POST /api/ranks/:rankId/assign`;
+- the built SPA.
 
-The service exposes:
+Production API calls validate Telegram `initData` with `BOT_TOKEN`, reject
+sessions older than one hour, and allow only the three fixed Telegram IDs.
+Assignment locks the rank in a TypeORM transaction and records the
+authenticated actor in `changelogs`.
 
-- `GET /health` — unauthenticated process health;
-- `GET /api/state` — available and assigned ranks;
-- `POST /api/ranks/:rankId/assign` — atomic assignment;
-- `/` — built Mini App.
-
-Use a reverse proxy with a valid HTTPS certificate. Do not expose the API on a
-different origin from the web client unless CORS is deliberately configured.
+Use an HTTPS reverse proxy to route Mini App traffic to `TG_APP_PORT` (default
+`3000`). The bot webhook remains on `WEBHOOK_PORT`.
 
 ## Telegram setup
 
-The deployed public URL must use HTTPS.
-
-Recommended setup:
-
-1. Open `@BotFather`.
-2. Choose the ranks bot.
-3. Open **Bot Settings → Configure Mini App**.
-4. Enable the Main Mini App and set its URL to the deployed root URL.
-5. Optionally use `/setmenubutton` to expose the same URL from the bot's private
-   chat menu.
-
-The app can also be opened with a Telegram Mini App direct link after BotFather
-assigns its short name.
-
-Opening a menu button happens in the private bot chat, not in the friends'
-group. This app does not need group context: the player list and authorization
-are the three fixed Telegram IDs.
-
-## Security and data behavior
-
-- Production requests must include Telegram `initData`.
-- The server validates the HMAC signature and rejects sessions older than one
-  hour.
-- `initDataUnsafe` is never used for server authorization.
-- Only the three fixed Telegram IDs can read or change rank data.
-- Assignment locks the selected rank in a transaction and rejects a second
-  assignment with HTTP `409`.
-- The authenticated Telegram ID is recorded in `changelogs`.
-
-This package intentionally has no editing, deletion, or unassignment UI.
-
-## Deployment boundary
-
-The repository's existing root package, Dockerfile, Swarm configuration, and
-bot process are unchanged. Deploy this directory as a second service pointing
-at the same `DB_URL`. Its reverse-proxy route should use a separate host or a
-non-overlapping path from the legacy bot webhook.
+In `@BotFather`, configure the ranks bot's Main Mini App URL to the deployed
+HTTPS root. A menu button opens from the bot's private chat; the app does not
+need group context because authorization uses the fixed Telegram IDs.

@@ -13,13 +13,51 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 22.x
-    - name: Install dependencies
+    - name: Install root dependencies
       run: npm ci
+    - name: Install Mini App dependencies
+      run: npm --prefix src/tg-app ci
     - name: Static checks
       run: npm run check
 
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: ranks-bot
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: ranks_bot
+        ports:
+        - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ranks-bot -d ranks_bot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Use Node.js 22
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+    - name: Install root dependencies
+      run: npm ci
+    - name: Install Mini App dependencies
+      run: npm --prefix src/tg-app ci
+    - name: Test
+      run: npm test
+    - name: Test TypeORM integration
+      env:
+        TEST_DB_URL: postgresql://ranks-bot:test_password@localhost:5432/ranks_bot
+      run: npm run test:integration
+
   build:
-    needs: lint
+    needs: [lint, test]
 
     runs-on: ubuntu-latest
 
@@ -30,7 +68,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 22.x
-    - name: Install dependencies
+    - name: Install root dependencies
       run: npm ci
+    - name: Install Mini App dependencies
+      run: npm --prefix src/tg-app ci
     - name: Build
       run: npm run build
