@@ -1,5 +1,14 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
+import express, {
+  type ErrorRequestHandler,
+  type NextFunction,
+  type Request,
+  type Response,
+} from 'express';
+import { Pool, type PoolClient, type QueryResult } from 'pg';
 import {
   FIXED_USERS,
   type AppState,
@@ -283,3 +292,158 @@ export const createPostgresStore = (pool: SqlPool): RankStore => {
 
   return { getState, assign };
 };
+
+interface AppDependencies {
+  store: RankStore;
+  env: AppEnvironment;
+  logError?: (error: unknown) => void;
+  staticDirectory?: string;
+}
+
+const authorizationHeader = (request: Request): string | undefined => {
+  const value = request.headers.authorization;
+  return Array.isArray(value) ? value[0] : value;
+};
+
+export const createApp = ({
+  store,
+  env,
+  logError = console.error,
+  staticDirectory,
+}: AppDependencies) => {
+  const app = express();
+  app.disable('x-powered-by');
+  app.use(express.json({ limit: '8kb' }));
+
+  app.get('/health', (_request, response) => {
+    response.json({ ok: true });
+  });
+
+  app.use('/api', (request, response, next) => {
+    try {
+      response.locals.telegramUser = authenticateRequest(
+        authorizationHeader(request),
+        env,
+      );
+      next();
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get('/api/state', async (_request, response, next) => {
+    try {
+      response.json(await store.getState());
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post('/api/ranks/:rankId/assign', async (request, response, next) => {
+    try {
+      const rankId = Number(request.params.rankId);
+      if (!Number.isInteger(rankId) || rankId <= 0) {
+        throw new AppError(400, 'Invalid rank id');
+      }
+
+      const recipientId = request.body?.userId;
+      if (!Number.isInteger(recipientId)) {
+        throw new AppError(400, 'Invalid recipient');
+      }
+
+      const actorId = (response.locals.telegramUser as TelegramUser).id;
+      response.json(await store.assign(rankId, recipientId, actorId));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  const webRoot = staticDirectory
+    ?? (env.NODE_ENV === 'production'
+      ? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../web')
+      : undefined);
+  if (webRoot) {
+    app.use(express.static(webRoot));
+    app.use((request, response, next) => {
+      if (request.method !== 'GET' || request.path.startsWith('/api/')) {
+        next();
+        return;
+      }
+      response.sendFile(path.join(webRoot, 'index.html'));
+    });
+  }
+
+  const errorHandler: ErrorRequestHandler = (
+    error: unknown,
+    _request: Request,
+    response: Response,
+    _next: NextFunction,
+  ) => {
+    void _next;
+    if (error instanceof AuthError || error instanceof AppError) {
+      response.status(error.status).json({ error: error.message });
+      return;
+    }
+
+    logError(error);
+    response.status(500).json({ error: 'Internal server error' });
+  };
+  app.use(errorHandler);
+
+  return app;
+};
+
+const mapQueryResult = <Row>(result: QueryResult): SqlResult<Row> => ({
+  rows: result.rows as Row[],
+  rowCount: result.rowCount,
+});
+
+const adaptClient = (client: PoolClient): SqlClient => ({
+  async query<Row>(text: string, values?: unknown[]) {
+    return mapQueryResult<Row>(await client.query(text, values));
+  },
+  release() {
+    client.release();
+  },
+});
+
+export const adaptPool = (pool: Pool): SqlPool => ({
+  async query<Row>(text: string, values?: unknown[]) {
+    return mapQueryResult<Row>(await pool.query(text, values));
+  },
+  async connect() {
+    return adaptClient(await pool.connect());
+  },
+});
+
+const start = async () => {
+  if (!process.env.DB_URL) {
+    throw new Error('DB_URL is required');
+  }
+
+  const pool = new Pool({ connectionString: process.env.DB_URL });
+  const app = createApp({
+    store: createPostgresStore(adaptPool(pool)),
+    env: process.env,
+  });
+  const port = Number(process.env.PORT ?? 3000);
+  const server = app.listen(port, () => {
+    console.log(`Telegram Mini App listening on :${port}`);
+  });
+
+  const stop = () => {
+    server.close(() => {
+      void pool.end().finally(() => process.exit(0));
+    });
+  };
+  process.once('SIGINT', stop);
+  process.once('SIGTERM', stop);
+};
+
+const entryFile = process.argv[1] ? path.resolve(process.argv[1]) : '';
+if (entryFile === fileURLToPath(import.meta.url)) {
+  void start().catch((error: unknown) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

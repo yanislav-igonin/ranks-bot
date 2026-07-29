@@ -1,13 +1,17 @@
 // @vitest-environment node
 
 import { describe, expect, it } from 'vitest';
+import request from 'supertest';
 
 import {
   AppError,
+  createApp,
   createPostgresStore,
+  type RankStore,
   type SqlClient,
   type SqlPool,
 } from '../server.js';
+import type { AppState } from '../contract.js';
 
 interface RecordedQuery {
   text: string;
@@ -200,5 +204,144 @@ describe('PostgreSQL rank assignment', () => {
 
     expect(fake.queries.at(-1)?.text).toBe('ROLLBACK');
     expect(fake.wasReleased()).toBe(true);
+  });
+});
+
+const apiState: AppState = {
+  availableRanks: [{ id: 65, title: 'Кукурузный макрогол' }],
+  users: [
+    {
+      id: 546166718,
+      username: 'Noeter',
+      displayName: 'Noeter',
+      initials: 'NO',
+    },
+    {
+      id: 142166671,
+      username: 'hobo_with_a_hookah',
+      displayName: 'Hobo',
+      initials: 'HB',
+    },
+    {
+      id: 383288860,
+      username: 'ConeConundrum',
+      displayName: 'Cone',
+      initials: 'CC',
+    },
+  ],
+  assignedByUser: [],
+};
+
+const createApiStore = (
+  assignError?: Error,
+): RankStore & { assignments: number[][] } => {
+  const assignments: number[][] = [];
+  return {
+    assignments,
+    async getState() {
+      return apiState;
+    },
+    async assign(rankId, recipientId, actorId) {
+      assignments.push([rankId, recipientId, actorId]);
+      if (assignError) throw assignError;
+      return apiState;
+    },
+  };
+};
+
+describe('rank API', () => {
+  it('reports process health without Telegram authorization', async () => {
+    const response = await request(createApp({
+      store: createApiStore(),
+      env: { NODE_ENV: 'production' },
+    })).get('/health');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ ok: true });
+  });
+
+  it('returns state using the development identity', async () => {
+    const response = await request(createApp({
+      store: createApiStore(),
+      env: {
+        NODE_ENV: 'development',
+        DEV_TELEGRAM_USER_ID: '142166671',
+      },
+    })).get('/api/state');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(apiState);
+  });
+
+  it('rejects unauthenticated production requests', async () => {
+    const response = await request(createApp({
+      store: createApiStore(),
+      env: { NODE_ENV: 'production', BOT_TOKEN: 'secret' },
+    })).get('/api/state');
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
+      error: 'Telegram authorization is required',
+    });
+  });
+
+  it('assigns a rank as the authenticated Telegram actor', async () => {
+    const store = createApiStore();
+    const response = await request(createApp({
+      store,
+      env: {
+        NODE_ENV: 'development',
+        DEV_TELEGRAM_USER_ID: '142166671',
+      },
+    }))
+      .post('/api/ranks/65/assign')
+      .send({ userId: 546166718 });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(apiState);
+    expect(store.assignments).toEqual([[65, 546166718, 142166671]]);
+  });
+
+  it.each([
+    ['/api/ranks/nope/assign', { userId: 546166718 }, 'Invalid rank id'],
+    ['/api/ranks/0/assign', { userId: 546166718 }, 'Invalid rank id'],
+    ['/api/ranks/65/assign', { userId: 'Noeter' }, 'Invalid recipient'],
+    ['/api/ranks/65/assign', {}, 'Invalid recipient'],
+  ])('rejects malformed assignment input at %s', async (url, body, error) => {
+    const response = await request(createApp({
+      store: createApiStore(),
+      env: { NODE_ENV: 'development' },
+    })).post(url).send(body);
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error });
+  });
+
+  it.each([
+    [new AppError(404, 'Rank not found'), 404, 'Rank not found'],
+    [new AppError(409, 'Rank is already assigned'), 409, 'Rank is already assigned'],
+  ])('preserves expected assignment errors', async (failure, status, error) => {
+    const response = await request(createApp({
+      store: createApiStore(failure),
+      env: { NODE_ENV: 'development' },
+    }))
+      .post('/api/ranks/65/assign')
+      .send({ userId: 546166718 });
+
+    expect(response.status).toBe(status);
+    expect(response.body).toEqual({ error });
+  });
+
+  it('hides unexpected server error details', async () => {
+    const response = await request(createApp({
+      store: createApiStore(new Error('postgres password leaked')),
+      env: { NODE_ENV: 'development' },
+      logError: () => undefined,
+    }))
+      .post('/api/ranks/65/assign')
+      .send({ userId: 546166718 });
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({ error: 'Internal server error' });
   });
 });
