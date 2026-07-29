@@ -11,7 +11,6 @@ const createLogger = () => {
 
   return pino({
     level: logLevel(),
-    prettyPrint: true,
   });
 };
 

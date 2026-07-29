@@ -3,7 +3,7 @@ import { AppConfig } from './config';
 import { BotModule, DbModule, LoggerModule } from './modules';
 
 const launch = async () => {
-  LoggerModule.info('release -', AppConfig.release);
+  LoggerModule.info({ release: AppConfig.release }, 'release');
   await DbModule.initialize();
   LoggerModule.info('db - connection - success');
   await BotModule.launch();
