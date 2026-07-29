@@ -42,7 +42,7 @@
     "nodemon": "^1.18.10",
     "telegram-typings": "^4.0.0-beta",
     "ts-node": "^8.10.2",
-    "typescript": "^3.9.7"
+    "typescript": "6.0.3"
   },
   "husky": {
     "pre-push": "npm run check"
