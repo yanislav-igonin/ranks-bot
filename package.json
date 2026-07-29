@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node build/index.js",
     "dev": "nodemon -r dotenv/config --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
-    "test": "node test/reply-in-chunks.test.js",
+    "test": "npm run test:unit",
+    "test:unit": "node test/reply-in-chunks.test.js && node --test test/tg-app/*.test.js",
+    "test:integration": "node --test test/integration/*.test.js",
     "build": "tsc -p .",
     "lint": "biome lint src test",
     "format": "biome format --write src test",

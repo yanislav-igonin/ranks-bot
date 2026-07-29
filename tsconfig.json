@@ -62,6 +62,7 @@
 
     /* Advanced Options */
     "resolveJsonModule": true,                /* Include modules imported with '.json' extension */
+    "types": ["node"],
     "skipLibCheck": true                      /* Skip type checking dependency declaration files. */
   },
   "exclude": ["src/tg-app"]
