@@ -1,6 +1,10 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
-import { FIXED_USERS } from './contract.js';
+import {
+  FIXED_USERS,
+  type AppState,
+  type AssignedUser,
+} from './contract.js';
 
 export interface TelegramUser {
   id: number;
@@ -20,6 +24,39 @@ export interface AppEnvironment {
 
 export class AuthError extends Error {
   readonly status = 401;
+}
+
+export class AppError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+export interface SqlResult<Row> {
+  rows: Row[];
+  rowCount: number | null;
+}
+
+export interface SqlClient {
+  query<Row>(text: string, values?: unknown[]): Promise<SqlResult<Row>>;
+  release(): void;
+}
+
+export interface SqlPool {
+  query<Row>(text: string, values?: unknown[]): Promise<SqlResult<Row>>;
+  connect(): Promise<SqlClient>;
+}
+
+export interface RankStore {
+  getState(): Promise<AppState>;
+  assign(
+    rankId: number,
+    recipientId: number,
+    actorId: number,
+  ): Promise<AppState>;
 }
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60;
@@ -118,4 +155,131 @@ export const authenticateRequest = (
   }
 
   return user;
+};
+
+interface AvailableRankRow {
+  id: number;
+  title: string;
+}
+
+interface AssignedRankRow extends AvailableRankRow {
+  userId: number;
+  count: number;
+}
+
+const AVAILABLE_RANKS_SQL = `
+  SELECT r.id, r.title
+  FROM ranks r
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM ranks_to_users rtu
+    WHERE rtu.rank_id = r.id
+  )
+  ORDER BY r.id
+`;
+
+const ASSIGNED_RANKS_SQL = `
+  SELECT
+    u.id AS "userId",
+    r.id,
+    r.title,
+    rtu.count
+  FROM ranks_to_users rtu
+  JOIN users u ON u.id = rtu.user_id
+  JOIN ranks r ON r.id = rtu.rank_id
+  WHERE u.id = ANY($1::int[])
+  ORDER BY u.id, r.id
+`;
+
+export const createPostgresStore = (pool: SqlPool): RankStore => {
+  const getState = async (): Promise<AppState> => {
+    const userIds = FIXED_USERS.map(({ id }) => id);
+    const [availableResult, assignedResult] = await Promise.all([
+      pool.query<AvailableRankRow>(AVAILABLE_RANKS_SQL),
+      pool.query<AssignedRankRow>(ASSIGNED_RANKS_SQL, [userIds]),
+    ]);
+    const assignedByUser: AssignedUser[] = FIXED_USERS.map((user) => ({
+      ...user,
+      ranks: assignedResult.rows
+        .filter(({ userId }) => userId === user.id)
+        .map(({ id, title, count }) => ({ id, title, count })),
+    }));
+
+    return {
+      availableRanks: availableResult.rows.map(({ id, title }) => ({
+        id,
+        title,
+      })),
+      users: FIXED_USERS.map((user) => ({ ...user })),
+      assignedByUser,
+    };
+  };
+
+  const assign = async (
+    rankId: number,
+    recipientId: number,
+    actorId: number,
+  ): Promise<AppState> => {
+    if (!FIXED_USERS.some(({ id }) => id === recipientId)) {
+      throw new AppError(400, 'Invalid recipient');
+    }
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const rankResult = await client.query<AvailableRankRow>(
+        'SELECT id, title FROM ranks WHERE id = $1 FOR UPDATE',
+        [rankId],
+      );
+      const rank = rankResult.rows[0];
+      if (!rank) {
+        throw new AppError(404, 'Rank not found');
+      }
+
+      const assignmentResult = await client.query<{ exists: number }>(
+        `SELECT 1 AS "exists"
+         FROM ranks_to_users
+         WHERE rank_id = $1
+         LIMIT 1`,
+        [rankId],
+      );
+      if (assignmentResult.rows.length > 0) {
+        throw new AppError(409, 'Rank is already assigned');
+      }
+
+      const inserted = await client.query<{ id: number }>(
+        `INSERT INTO ranks_to_users (rank_id, user_id, comment, count)
+         VALUES ($1, $2, '', 1)
+         RETURNING id`,
+        [rankId, recipientId],
+      );
+      const assignmentId = inserted.rows[0]?.id;
+      if (!assignmentId) {
+        throw new Error('Assignment insert returned no id');
+      }
+
+      await client.query(
+        `INSERT INTO changelogs
+          (type, "table", object_id, user_id, current_value)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [
+          'insert',
+          'ranks_to_users',
+          assignmentId,
+          actorId,
+          rank.title,
+        ],
+      );
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+
+    return getState();
+  };
+
+  return { getState, assign };
 };
