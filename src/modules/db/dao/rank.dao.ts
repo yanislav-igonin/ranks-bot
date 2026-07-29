@@ -15,9 +15,9 @@ export class RankDao {
   }
 
   async getRank({ id }: { id: number }) {
-    const rank = await this.repository.findOne(id);
+    const rank = await this.repository.findOneBy({ id });
 
-    if (rank === undefined) {
+    if (rank === null) {
       return null;
     }
 

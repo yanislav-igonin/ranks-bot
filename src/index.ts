@@ -4,7 +4,7 @@ import { BotModule, DbModule, LoggerModule } from './modules';
 
 const launch = async () => {
   LoggerModule.info('release -', AppConfig.release);
-  await DbModule.connect();
+  await DbModule.initialize();
   LoggerModule.info('db - connection - success');
   await BotModule.launch();
   LoggerModule.info('bot - online');

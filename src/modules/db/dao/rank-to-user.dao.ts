@@ -11,18 +11,20 @@ export class RankToUserDao {
 
   async getRanksToUsers() {
     const ranksToUsers = await this.repository.find({
-      relations: ['user', 'rank'],
+      relations: { user: true, rank: true },
     });
     return ranksToUsers;
   }
 
   async getRankToUser({ rankId, userId }: { rankId: number; userId: number }) {
     const rankToUser = await this.repository.findOne({
-      rank: { id: rankId },
-      user: { id: userId },
+      where: {
+        rank: { id: rankId },
+        user: { id: userId },
+      },
     });
 
-    if (rankToUser === undefined) {
+    if (rankToUser === null) {
       return null;
     }
 

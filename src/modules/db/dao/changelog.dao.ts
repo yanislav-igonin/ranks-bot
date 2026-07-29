@@ -40,7 +40,7 @@ export class ChangelogDao {
 
   async getChangelogs() {
     const changelogs = await this.repository.find({
-      relations: ['user'],
+      relations: { user: true },
     });
 
     return changelogs;

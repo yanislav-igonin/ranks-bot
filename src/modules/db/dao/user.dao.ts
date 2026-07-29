@@ -15,9 +15,9 @@ export class UserDao {
   }
 
   async getUserByUsername({ username }: { username: string }) {
-    const user = await this.repository.findOne({ username });
+    const user = await this.repository.findOneBy({ username });
 
-    if (user === undefined) {
+    if (user === null) {
       return null;
     }
 

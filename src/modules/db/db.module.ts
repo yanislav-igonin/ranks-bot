@@ -1,5 +1,4 @@
-import { getConnectionManager } from 'typeorm';
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { DataSource } from 'typeorm';
 
 import { DbConfig } from '../../config';
 import {
@@ -10,9 +9,9 @@ import {
 } from './entities';
 
 import { SeedInitialData1594905684546 } from './seeds';
+import { SnakeNamingStrategy } from './snake-naming.strategy';
 
-const connectionManager = getConnectionManager();
-const connection = connectionManager.create({
+const DbModule = new DataSource({
   type: 'postgres',
   entities: [RankEntity, UserEntity, RankToUserEntity, ChangelogEntity],
   migrations: [SeedInitialData1594905684546],
@@ -21,4 +20,4 @@ const connection = connectionManager.create({
   namingStrategy: new SnakeNamingStrategy(),
 });
 
-export { connection as DbModule };
+export { DbModule };
