@@ -1,6 +1,6 @@
-import { TextContext } from '../modules/bot/interfaces';
+import type { TextContext } from '../modules/bot/interfaces';
+import { ChangelogDao, RankDao } from '../modules/db/dao';
 import { AddService } from '../services';
-import { RankDao, ChangelogDao } from '../modules/db/dao';
 
 export const AddController = async (ctx: TextContext) => {
   const rankTitle = ctx.update.message.text.slice(

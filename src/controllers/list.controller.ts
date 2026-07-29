@@ -1,8 +1,7 @@
-import { TextContext } from '../modules/bot/interfaces';
+import type { TextContext } from '../modules/bot/interfaces';
+import { RankDao, RankToUserDao } from '../modules/db/dao';
 import { ListService } from '../services';
-import { RankToUserDao, RankDao } from '../modules/db/dao';
 import { replyInChunks } from './reply-in-chunks';
-
 
 export const ListController = async (ctx: TextContext) => {
   const rankToUserDao = new RankToUserDao();

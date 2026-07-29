@@ -1,19 +1,19 @@
+import { AddService } from './add.service';
+import { AssignService } from './assign.service';
+import { ChangelogService } from './changelog.service';
+import { DeleteService } from './delete.service';
 import { HelpService } from './help.service';
 import { ListService } from './list.service';
-import { AddService } from './add.service';
-import { DeleteService } from './delete.service';
-import { UpdateService } from './update.service';
-import { AssignService } from './assign.service';
 import { UnassignService } from './unassign.service';
-import { ChangelogService } from './changelog.service';
+import { UpdateService } from './update.service';
 
 export {
+  AddService,
+  AssignService,
+  ChangelogService,
+  DeleteService,
   HelpService,
   ListService,
-  AddService,
-  DeleteService,
-  UpdateService,
-  AssignService,
   UnassignService,
-  ChangelogService,
+  UpdateService,
 };

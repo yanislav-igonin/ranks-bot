@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import express, {
   type ErrorRequestHandler,
@@ -9,11 +9,7 @@ import express, {
   type Response,
 } from 'express';
 import { Pool, type PoolClient, type QueryResult } from 'pg';
-import {
-  FIXED_USERS,
-  type AppState,
-  type AssignedUser,
-} from './contract.js';
+import { type AppState, type AssignedUser, FIXED_USERS } from './contract.js';
 
 export interface TelegramUser {
   id: number;
@@ -61,11 +57,7 @@ export interface SqlPool {
 
 export interface RankStore {
   getState(): Promise<AppState>;
-  assign(
-    rankId: number,
-    recipientId: number,
-    actorId: number,
-  ): Promise<AppState>;
+  assign(rankId: number, recipientId: number, actorId: number): Promise<AppState>;
 }
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60;
@@ -88,23 +80,21 @@ export const validateInitData = (
     .map(([key, value]) => `${key}=${value}`)
     .join('\n');
   const secret = createHmac('sha256', 'WebAppData').update(botToken).digest();
-  const expectedHash = createHmac('sha256', secret)
-    .update(dataCheckString)
-    .digest();
+  const expectedHash = createHmac('sha256', secret).update(dataCheckString).digest();
   const actualHash = Buffer.from(receivedHash, 'hex');
 
   if (
-    actualHash.length !== expectedHash.length
-    || !timingSafeEqual(actualHash, expectedHash)
+    actualHash.length !== expectedHash.length ||
+    !timingSafeEqual(actualHash, expectedHash)
   ) {
     throw new AuthError('Invalid Telegram signature');
   }
 
   const authDate = Number(params.get('auth_date'));
   if (
-    !Number.isInteger(authDate)
-    || nowSeconds - authDate > SESSION_MAX_AGE_SECONDS
-    || authDate > nowSeconds + 60
+    !Number.isInteger(authDate) ||
+    nowSeconds - authDate > SESSION_MAX_AGE_SECONDS ||
+    authDate > nowSeconds + 60
   ) {
     throw new AuthError('Telegram session expired');
   }
@@ -133,9 +123,7 @@ export const authenticateRequest = (
   let user: TelegramUser;
 
   if (env.NODE_ENV !== 'production' && !authorization) {
-    const developmentId = Number(
-      env.DEV_TELEGRAM_USER_ID ?? FIXED_USERS[1]?.id,
-    );
+    const developmentId = Number(env.DEV_TELEGRAM_USER_ID ?? FIXED_USERS[1]?.id);
     const fixedUser = FIXED_USERS.find(({ id }) => id === developmentId);
     if (!fixedUser) {
       throw new AuthError('User is not allowed');
@@ -271,13 +259,7 @@ export const createPostgresStore = (pool: SqlPool): RankStore => {
         `INSERT INTO changelogs
           (type, "table", object_id, user_id, current_value)
          VALUES ($1, $2, $3, $4, $5)`,
-        [
-          'insert',
-          'ranks_to_users',
-          assignmentId,
-          actorId,
-          rank.title,
-        ],
+        ['insert', 'ranks_to_users', assignmentId, actorId, rank.title],
       );
       await client.query('COMMIT');
     } catch (error) {
@@ -358,8 +340,9 @@ export const createApp = ({
     }
   });
 
-  const webRoot = staticDirectory
-    ?? (env.NODE_ENV === 'production'
+  const webRoot =
+    staticDirectory ??
+    (env.NODE_ENV === 'production'
       ? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../web')
       : undefined);
   if (webRoot) {

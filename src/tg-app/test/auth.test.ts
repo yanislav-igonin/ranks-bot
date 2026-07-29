@@ -2,11 +2,7 @@
 
 import { createHmac } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import {
-  AuthError,
-  authenticateRequest,
-  validateInitData,
-} from '../server.js';
+import { AuthError, authenticateRequest, validateInitData } from '../server.js';
 
 const TOKEN = '123456:telegram-test-token';
 const NOW_SECONDS = 1_900_000_000;
@@ -38,8 +34,9 @@ const allowedUser = {
 
 describe('validateInitData', () => {
   it('returns the Telegram user from a valid signed session', () => {
-    expect(validateInitData(signedInitData(allowedUser), TOKEN, NOW_SECONDS))
-      .toEqual(allowedUser);
+    expect(
+      validateInitData(signedInitData(allowedUser), TOKEN, NOW_SECONDS),
+    ).toEqual(allowedUser);
   });
 
   it('rejects data changed after Telegram signed it', () => {
@@ -48,15 +45,17 @@ describe('validateInitData', () => {
       'attacker',
     );
 
-    expect(() => validateInitData(tampered, TOKEN, NOW_SECONDS))
-      .toThrow('Invalid Telegram signature');
+    expect(() => validateInitData(tampered, TOKEN, NOW_SECONDS)).toThrow(
+      'Invalid Telegram signature',
+    );
   });
 
   it('rejects sessions older than one hour', () => {
     const expired = signedInitData(allowedUser, NOW_SECONDS - 3601);
 
-    expect(() => validateInitData(expired, TOKEN, NOW_SECONDS))
-      .toThrow('Telegram session expired');
+    expect(() => validateInitData(expired, TOKEN, NOW_SECONDS)).toThrow(
+      'Telegram session expired',
+    );
   });
 });
 
@@ -68,25 +67,39 @@ describe('authenticateRequest', () => {
       username: 'mallory',
     });
 
-    expect(() => authenticateRequest(
-      `tma ${outsider}`,
-      { NODE_ENV: 'production', BOT_TOKEN: TOKEN },
-      NOW_SECONDS,
-    )).toThrow(new AuthError('User is not allowed'));
+    expect(() =>
+      authenticateRequest(
+        `tma ${outsider}`,
+        { NODE_ENV: 'production', BOT_TOKEN: TOKEN },
+        NOW_SECONDS,
+      ),
+    ).toThrow(new AuthError('User is not allowed'));
   });
 
   it('uses an allowlisted development identity outside production', () => {
-    expect(authenticateRequest(undefined, {
-      NODE_ENV: 'development',
-      DEV_TELEGRAM_USER_ID: '546166718',
-    }, NOW_SECONDS).id).toBe(546166718);
+    expect(
+      authenticateRequest(
+        undefined,
+        {
+          NODE_ENV: 'development',
+          DEV_TELEGRAM_USER_ID: '546166718',
+        },
+        NOW_SECONDS,
+      ).id,
+    ).toBe(546166718);
   });
 
   it('never accepts the development identity in production', () => {
-    expect(() => authenticateRequest(undefined, {
-      NODE_ENV: 'production',
-      BOT_TOKEN: TOKEN,
-      DEV_TELEGRAM_USER_ID: '546166718',
-    }, NOW_SECONDS)).toThrow('Telegram authorization is required');
+    expect(() =>
+      authenticateRequest(
+        undefined,
+        {
+          NODE_ENV: 'production',
+          BOT_TOKEN: TOKEN,
+          DEV_TELEGRAM_USER_ID: '546166718',
+        },
+        NOW_SECONDS,
+      ),
+    ).toThrow('Telegram authorization is required');
   });
 });

@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import { ApiError, App, type ApiClient, type TelegramBridge } from './App.js';
+import { type ApiClient, ApiError, App, type TelegramBridge } from './App.js';
 import './styles.css';
 
 interface TelegramWebApp {
@@ -70,7 +70,7 @@ const request = async <ResponseBody,>(
   }
 
   const response = await fetch(path, { ...init, headers });
-  const body = await response.json() as ResponseBody & { error?: string };
+  const body = (await response.json()) as ResponseBody & { error?: string };
   if (!response.ok) {
     throw new ApiError(response.status, body.error ?? 'Request failed');
   }
@@ -79,10 +79,11 @@ const request = async <ResponseBody,>(
 
 const api: ApiClient = {
   getState: () => request('/api/state'),
-  assign: (rankId, userId) => request(`/api/ranks/${rankId}/assign`, {
-    method: 'POST',
-    body: JSON.stringify({ userId }),
-  }),
+  assign: (rankId, userId) =>
+    request(`/api/ranks/${rankId}/assign`, {
+      method: 'POST',
+      body: JSON.stringify({ userId }),
+    }),
 };
 
 const root = document.getElementById('root');

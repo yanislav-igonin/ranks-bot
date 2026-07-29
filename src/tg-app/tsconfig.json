@@ -17,12 +17,5 @@
     "noEmit": true,
     "types": ["vitest/globals", "@testing-library/jest-dom"]
   },
-  "include": [
-    "contract.ts",
-    "server.ts",
-    "vite.config.ts",
-    "eslint.config.js",
-    "web",
-    "test"
-  ]
+  "include": ["contract.ts", "server.ts", "vite.config.ts", "web", "test"]
 }

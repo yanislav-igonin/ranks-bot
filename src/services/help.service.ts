@@ -1,7 +1,7 @@
 import { HelpResponse } from '../responses';
 
 export class HelpService {
-  private data: { text: string};
+  private data: { text: string };
 
   constructor(data: { text: string }) {
     this.data = data;

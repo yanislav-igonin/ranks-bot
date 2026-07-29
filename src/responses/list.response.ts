@@ -21,15 +21,11 @@ export class ListResponse {
       const userRanks = data[key];
 
       for (const rank of userRanks) {
-        const {
-          rankId, rankTitle, count, comment,
-        } = rank;
+        const { rankId, rankTitle, count, comment } = rank;
 
-        this.text = this
-          .text
-          .concat(
-            `${rankId}. ${rankTitle}${count > 1 ? ` x${count}` : ''}${comment !== '' ? ` - ${comment}` : ''}\n`,
-          );
+        this.text = this.text.concat(
+          `${rankId}. ${rankTitle}${count > 1 ? ` x${count}` : ''}${comment !== '' ? ` - ${comment}` : ''}\n`,
+        );
       }
 
       this.text = this.text.concat('\n');

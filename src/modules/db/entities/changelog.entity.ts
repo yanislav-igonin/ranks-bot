@@ -1,8 +1,11 @@
 import {
-  Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne,
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 
-// eslint-disable-next-line import/no-cycle
 import { UserEntity } from './user.entity';
 
 @Entity({ name: 'changelogs' })
@@ -28,6 +31,9 @@ export class ChangelogEntity {
   @Column({ default: '' })
   currentValue!: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.changelogs)
+  @ManyToOne(
+    () => UserEntity,
+    (user) => user.changelogs,
+  )
   user!: UserEntity;
 }

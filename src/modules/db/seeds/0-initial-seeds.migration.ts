@@ -1,12 +1,17 @@
-import { MigrationInterface, getRepository } from 'typeorm';
-import { UserEntity, RankEntity, RankToUserEntity } from '../entities';
+import { getRepository } from 'typeorm';
+import type { MigrationInterface } from 'typeorm';
+import { RankEntity, RankToUserEntity, UserEntity } from '../entities';
 
 export class SeedInitialData1594905684546 implements MigrationInterface {
-  private users: {id: number; username: string}[];
+  private users: { id: number; username: string }[];
 
-  private ranks: {id: number; title: string}[];
+  private ranks: { id: number; title: string }[];
 
-  private ranksToUsers: {user: {id: number}; rank: {id: number}; count?: number}[];
+  private ranksToUsers: {
+    user: { id: number };
+    rank: { id: number };
+    count?: number;
+  }[];
 
   constructor() {
     this.users = [
@@ -180,7 +185,6 @@ export class SeedInitialData1594905684546 implements MigrationInterface {
       { user: { id: 142166671 }, rank: { id: 64 } },
     ];
   }
-
 
   async up() {
     const userRepository = getRepository(UserEntity);

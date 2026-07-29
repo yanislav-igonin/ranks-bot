@@ -1,6 +1,6 @@
-import { TextContext } from '../modules/bot/interfaces';
-import { ChangelogService } from '../services';
+import type { TextContext } from '../modules/bot/interfaces';
 import { ChangelogDao } from '../modules/db/dao';
+import { ChangelogService } from '../services';
 import { replyInChunks } from './reply-in-chunks';
 
 export const ChangelogController = async (ctx: TextContext) => {

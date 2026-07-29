@@ -1,5 +1,5 @@
+import type { ChangelogDao, RankDao } from '../modules/db/dao';
 import { AddResponse } from '../responses';
-import { RankDao, ChangelogDao } from '../modules/db/dao';
 
 interface AddServiceData {
   user: { id: number };

@@ -1,9 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { AppState, FixedUser, Rank } from '../contract.js';
 
@@ -65,7 +60,7 @@ const AppHeader = ({
       <h1>{title}</h1>
     </div>
     {count !== undefined && (
-      <span className="header-count" aria-label={`${count} званий`}>
+      <span className="header-count" role="status" aria-label={`${count} званий`}>
         {String(count).padStart(2, '0')}
       </span>
     )}
@@ -100,7 +95,8 @@ export const App = ({ api, telegram }: AppProps) => {
     telegram.ready();
     telegram.expand();
     let active = true;
-    api.getState()
+    api
+      .getState()
       .then((state) => {
         if (!active) return;
         setData(state);
@@ -171,10 +167,9 @@ export const App = ({ api, telegram }: AppProps) => {
   };
 
   const totalAssigned = useMemo(
-    () => data?.assignedByUser.reduce(
-      (total, user) => total + user.ranks.length,
+    () =>
+      data?.assignedByUser.reduce((total, user) => total + user.ranks.length, 0) ??
       0,
-    ) ?? 0,
     [data],
   );
 
@@ -217,7 +212,9 @@ export const App = ({ api, telegram }: AppProps) => {
 
           {data.availableRanks.length === 0 ? (
             <div className="empty-state">
-              <span className="empty-icon" aria-hidden="true">✓</span>
+              <span className="empty-icon" aria-hidden="true">
+                ✓
+              </span>
               <h2>Всё разыграно</h2>
               <p>Свободных званий больше нет. История уже внизу.</p>
             </div>
@@ -229,11 +226,17 @@ export const App = ({ api, telegram }: AppProps) => {
                   key={rank.id}
                   type="button"
                   onClick={() => selectRank(rank)}
-                  style={{ '--row-delay': `${Math.min(index, 10) * 28}ms` } as React.CSSProperties}
+                  style={
+                    {
+                      '--row-delay': `${Math.min(index, 10) * 28}ms`,
+                    } as React.CSSProperties
+                  }
                 >
                   <RankGlyph index={index} />
                   <span className="rank-title">{rank.title}</span>
-                  <span className="rank-arrow" aria-hidden="true">↗</span>
+                  <span className="rank-arrow" aria-hidden="true">
+                    ↗
+                  </span>
                 </button>
               ))}
             </div>
@@ -249,7 +252,9 @@ export const App = ({ api, telegram }: AppProps) => {
                 setView('assigned');
               }}
             >
-              <span className="dock-icon" aria-hidden="true">≡</span>
+              <span className="dock-icon" aria-hidden="true">
+                ≡
+              </span>
               <span>Присвоенные звания</span>
               <span className="dock-count">{totalAssigned}</span>
             </button>
@@ -308,7 +313,9 @@ export const App = ({ api, telegram }: AppProps) => {
               <article
                 className="score-card"
                 key={user.id}
-                style={{ '--row-delay': `${userIndex * 60}ms` } as React.CSSProperties}
+                style={
+                  { '--row-delay': `${userIndex * 60}ms` } as React.CSSProperties
+                }
               >
                 <header className="score-header">
                   <PlayerMark user={user} />
@@ -337,7 +344,9 @@ export const App = ({ api, telegram }: AppProps) => {
 
           <nav className="bottom-dock" aria-label="Навигация">
             <button className="dock-button" type="button" onClick={goHome}>
-              <span className="dock-icon" aria-hidden="true">←</span>
+              <span className="dock-icon" aria-hidden="true">
+                ←
+              </span>
               <span>К розыгрышу</span>
               <span className="dock-count">{data.availableRanks.length}</span>
             </button>

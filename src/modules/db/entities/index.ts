@@ -1,11 +1,6 @@
-import { RankEntity } from './rank.entity';
-import { UserEntity } from './user.entity';
-import { RankToUserEntity } from './rank-to-user.entity';
 import { ChangelogEntity } from './changelog.entity';
+import { RankEntity } from './rank.entity';
+import { RankToUserEntity } from './rank-to-user.entity';
+import { UserEntity } from './user.entity';
 
-export {
-  RankEntity,
-  UserEntity,
-  RankToUserEntity,
-  ChangelogEntity,
-};
+export { ChangelogEntity, RankEntity, RankToUserEntity, UserEntity };

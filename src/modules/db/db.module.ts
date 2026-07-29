@@ -3,10 +3,10 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 import { DbConfig } from '../../config';
 import {
-  RankEntity,
-  UserEntity,
-  RankToUserEntity,
   ChangelogEntity,
+  RankEntity,
+  RankToUserEntity,
+  UserEntity,
 } from './entities';
 
 import { SeedInitialData1594905684546 } from './seeds';

@@ -10,7 +10,8 @@
   --accent: var(--tg-theme-button-color, #d8ff3e);
   --accent-text: var(--tg-theme-button-text-color, #101300);
   --line: color-mix(in srgb, var(--text) 12%, transparent);
-  --display: "DIN Condensed", "Avenir Next Condensed", "Franklin Gothic Condensed", sans-serif;
+  --display:
+    "DIN Condensed", "Avenir Next Condensed", "Franklin Gothic Condensed", sans-serif;
   background: var(--app-bg);
   color: var(--text);
 }
@@ -29,7 +30,12 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--text) 2%, transparent) 1px, transparent 1px) 0 0 / 22px 22px,
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--text) 2%, transparent) 1px,
+      transparent 1px
+    )
+    0 0 / 22px 22px,
     var(--app-bg);
   color: var(--text);
   overscroll-behavior: none;
@@ -80,9 +86,7 @@ button:focus-visible {
   position: relative;
   z-index: 1;
   min-height: 100vh;
-  padding:
-    max(22px, env(safe-area-inset-top))
-    16px
+  padding: max(22px, env(safe-area-inset-top)) 16px
     calc(108px + env(safe-area-inset-bottom));
 }
 
@@ -283,7 +287,11 @@ p {
   border: 1px solid color-mix(in srgb, var(--accent) 36%, transparent);
   border-radius: 19px;
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, transparent), transparent 62%),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 16%, transparent),
+      transparent 62%
+    ),
     var(--surface);
 }
 
@@ -514,7 +522,11 @@ p {
   align-content: center;
   padding: 28px;
   background:
-    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 36%),
+    radial-gradient(
+      circle at 50% 42%,
+      color-mix(in srgb, var(--accent) 10%, transparent),
+      transparent 36%
+    ),
     var(--app-bg);
 }
 

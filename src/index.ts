@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { AppConfig } from './config';
-import { LoggerModule, BotModule, DbModule } from './modules';
+import { BotModule, DbModule, LoggerModule } from './modules';
 
 const launch = async () => {
   LoggerModule.info('release -', AppConfig.release);

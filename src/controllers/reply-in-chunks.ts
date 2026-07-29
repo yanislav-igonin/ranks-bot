@@ -13,24 +13,15 @@ export const replyInChunks = async (
   while (remaining.length > 0) {
     if (remaining.length <= TELEGRAM_MESSAGE_LIMIT) {
       // Replies must arrive in the same order as their source text.
-      // eslint-disable-next-line no-await-in-loop
       await ctx.reply(remaining);
       return;
     }
 
-    const newlineIndex = remaining.lastIndexOf(
-      '\n',
-      TELEGRAM_MESSAGE_LIMIT,
-    );
-    const splitIndex = newlineIndex > 0
-      ? newlineIndex
-      : TELEGRAM_MESSAGE_LIMIT;
+    const newlineIndex = remaining.lastIndexOf('\n', TELEGRAM_MESSAGE_LIMIT);
+    const splitIndex = newlineIndex > 0 ? newlineIndex : TELEGRAM_MESSAGE_LIMIT;
 
     // Replies must arrive in the same order as their source text.
-    // eslint-disable-next-line no-await-in-loop
     await ctx.reply(remaining.slice(0, splitIndex));
-    remaining = remaining.slice(
-      splitIndex + (newlineIndex === splitIndex ? 1 : 0),
-    );
+    remaining = remaining.slice(splitIndex + (newlineIndex === splitIndex ? 1 : 0));
   }
 };

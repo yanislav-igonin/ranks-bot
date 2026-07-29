@@ -1,8 +1,8 @@
 // @vitest-environment node
 
-import { describe, expect, it } from 'vitest';
 import request from 'supertest';
-
+import { describe, expect, it } from 'vitest';
+import type { AppState } from '../contract.js';
 import {
   AppError,
   createApp,
@@ -11,7 +11,6 @@ import {
   type SqlClient,
   type SqlPool,
 } from '../server.js';
-import type { AppState } from '../contract.js';
 
 interface RecordedQuery {
   text: string;
@@ -19,9 +18,7 @@ interface RecordedQuery {
 }
 
 const stateRows = {
-  available: [
-    { id: 65, title: 'Кукурузный макрогол' },
-  ],
+  available: [{ id: 65, title: 'Кукурузный макрогол' }],
   assigned: [
     { userId: 546166718, id: 1, title: 'Стоянов', count: 1 },
     { userId: 383288860, id: 26, title: 'Куколд', count: 2 },
@@ -51,9 +48,7 @@ describe('PostgreSQL rank state', () => {
 
     const state = await createPostgresStore(pool).getState();
 
-    expect(state.availableRanks).toEqual([
-      { id: 65, title: 'Кукурузный макрогол' },
-    ]);
+    expect(state.availableRanks).toEqual([{ id: 65, title: 'Кукурузный макрогол' }]);
     expect(state.assignedByUser).toEqual([
       {
         id: 546166718,
@@ -78,9 +73,7 @@ describe('PostgreSQL rank state', () => {
       },
     ]);
     expect(pool.queries[0]?.text).toContain('NOT EXISTS');
-    expect(pool.queries[1]?.values).toEqual([
-      [546166718, 142166671, 383288860],
-    ]);
+    expect(pool.queries[1]?.values).toEqual([[546166718, 142166671, 383288860]]);
   });
 });
 
@@ -142,10 +135,15 @@ describe('PostgreSQL rank assignment', () => {
   it('locks, assigns, audits, commits, and refreshes state', async () => {
     const fake = createTransactionPool();
 
-    const state = await createPostgresStore(fake.pool)
-      .assign(65, 546166718, 142166671);
+    const state = await createPostgresStore(fake.pool).assign(
+      65,
+      546166718,
+      142166671,
+    );
 
-    const statements = fake.queries.map(({ text }) => text.replace(/\s+/g, ' ').trim());
+    const statements = fake.queries.map(({ text }) =>
+      text.replace(/\s+/g, ' ').trim(),
+    );
     expect(statements[0]).toBe('BEGIN');
     expect(statements[1]).toContain('FOR UPDATE');
     expect(statements[2]).toContain('FROM ranks_to_users');
@@ -167,9 +165,9 @@ describe('PostgreSQL rank assignment', () => {
   it('rolls back when the rank does not exist', async () => {
     const fake = createTransactionPool({ rankRows: [] });
 
-    await expect(createPostgresStore(fake.pool)
-      .assign(999, 546166718, 142166671))
-      .rejects.toEqual(new AppError(404, 'Rank not found'));
+    await expect(
+      createPostgresStore(fake.pool).assign(999, 546166718, 142166671),
+    ).rejects.toEqual(new AppError(404, 'Rank not found'));
 
     expect(fake.queries.at(-1)?.text).toBe('ROLLBACK');
     expect(fake.wasReleased()).toBe(true);
@@ -178,9 +176,9 @@ describe('PostgreSQL rank assignment', () => {
   it('rolls back when another request already assigned the rank', async () => {
     const fake = createTransactionPool({ assignedRows: [{ exists: 1 }] });
 
-    await expect(createPostgresStore(fake.pool)
-      .assign(65, 546166718, 142166671))
-      .rejects.toEqual(new AppError(409, 'Rank is already assigned'));
+    await expect(
+      createPostgresStore(fake.pool).assign(65, 546166718, 142166671),
+    ).rejects.toEqual(new AppError(409, 'Rank is already assigned'));
 
     expect(fake.queries.at(-1)?.text).toBe('ROLLBACK');
   });
@@ -188,9 +186,9 @@ describe('PostgreSQL rank assignment', () => {
   it('rejects recipients outside the fixed friend list before SQL', async () => {
     const fake = createTransactionPool();
 
-    await expect(createPostgresStore(fake.pool)
-      .assign(65, 999, 142166671))
-      .rejects.toEqual(new AppError(400, 'Invalid recipient'));
+    await expect(
+      createPostgresStore(fake.pool).assign(65, 999, 142166671),
+    ).rejects.toEqual(new AppError(400, 'Invalid recipient'));
 
     expect(fake.queries).toEqual([]);
   });
@@ -198,9 +196,9 @@ describe('PostgreSQL rank assignment', () => {
   it('rolls back SQL errors and releases the client', async () => {
     const fake = createTransactionPool({ failInsert: true });
 
-    await expect(createPostgresStore(fake.pool)
-      .assign(65, 546166718, 142166671))
-      .rejects.toThrow('database unavailable');
+    await expect(
+      createPostgresStore(fake.pool).assign(65, 546166718, 142166671),
+    ).rejects.toThrow('database unavailable');
 
     expect(fake.queries.at(-1)?.text).toBe('ROLLBACK');
     expect(fake.wasReleased()).toBe(true);
@@ -251,33 +249,39 @@ const createApiStore = (
 
 describe('rank API', () => {
   it('reports process health without Telegram authorization', async () => {
-    const response = await request(createApp({
-      store: createApiStore(),
-      env: { NODE_ENV: 'production' },
-    })).get('/health');
+    const response = await request(
+      createApp({
+        store: createApiStore(),
+        env: { NODE_ENV: 'production' },
+      }),
+    ).get('/health');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
   });
 
   it('returns state using the development identity', async () => {
-    const response = await request(createApp({
-      store: createApiStore(),
-      env: {
-        NODE_ENV: 'development',
-        DEV_TELEGRAM_USER_ID: '142166671',
-      },
-    })).get('/api/state');
+    const response = await request(
+      createApp({
+        store: createApiStore(),
+        env: {
+          NODE_ENV: 'development',
+          DEV_TELEGRAM_USER_ID: '142166671',
+        },
+      }),
+    ).get('/api/state');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual(apiState);
   });
 
   it('rejects unauthenticated production requests', async () => {
-    const response = await request(createApp({
-      store: createApiStore(),
-      env: { NODE_ENV: 'production', BOT_TOKEN: 'secret' },
-    })).get('/api/state');
+    const response = await request(
+      createApp({
+        store: createApiStore(),
+        env: { NODE_ENV: 'production', BOT_TOKEN: 'secret' },
+      }),
+    ).get('/api/state');
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
@@ -287,13 +291,15 @@ describe('rank API', () => {
 
   it('assigns a rank as the authenticated Telegram actor', async () => {
     const store = createApiStore();
-    const response = await request(createApp({
-      store,
-      env: {
-        NODE_ENV: 'development',
-        DEV_TELEGRAM_USER_ID: '142166671',
-      },
-    }))
+    const response = await request(
+      createApp({
+        store,
+        env: {
+          NODE_ENV: 'development',
+          DEV_TELEGRAM_USER_ID: '142166671',
+        },
+      }),
+    )
       .post('/api/ranks/65/assign')
       .send({ userId: 546166718 });
 
@@ -308,10 +314,14 @@ describe('rank API', () => {
     ['/api/ranks/65/assign', { userId: 'Noeter' }, 'Invalid recipient'],
     ['/api/ranks/65/assign', {}, 'Invalid recipient'],
   ])('rejects malformed assignment input at %s', async (url, body, error) => {
-    const response = await request(createApp({
-      store: createApiStore(),
-      env: { NODE_ENV: 'development' },
-    })).post(url).send(body);
+    const response = await request(
+      createApp({
+        store: createApiStore(),
+        env: { NODE_ENV: 'development' },
+      }),
+    )
+      .post(url)
+      .send(body);
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({ error });
@@ -321,10 +331,12 @@ describe('rank API', () => {
     [new AppError(404, 'Rank not found'), 404, 'Rank not found'],
     [new AppError(409, 'Rank is already assigned'), 409, 'Rank is already assigned'],
   ])('preserves expected assignment errors', async (failure, status, error) => {
-    const response = await request(createApp({
-      store: createApiStore(failure),
-      env: { NODE_ENV: 'development' },
-    }))
+    const response = await request(
+      createApp({
+        store: createApiStore(failure),
+        env: { NODE_ENV: 'development' },
+      }),
+    )
       .post('/api/ranks/65/assign')
       .send({ userId: 546166718 });
 
@@ -333,11 +345,13 @@ describe('rank API', () => {
   });
 
   it('hides unexpected server error details', async () => {
-    const response = await request(createApp({
-      store: createApiStore(new Error('postgres password leaked')),
-      env: { NODE_ENV: 'development' },
-      logError: () => undefined,
-    }))
+    const response = await request(
+      createApp({
+        store: createApiStore(new Error('postgres password leaked')),
+        env: { NODE_ENV: 'development' },
+        logError: () => undefined,
+      }),
+    )
       .post('/api/ranks/65/assign')
       .send({ userId: 546166718 });
 

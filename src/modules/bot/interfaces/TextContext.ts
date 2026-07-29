@@ -1,10 +1,6 @@
-import { MessageEntity } from 'telegram-typings';
+import type { MessageEntity } from 'telegram-typings';
 
-import {
-  UserMessage,
-  UserUpdate,
-  UserContext,
-} from './UserContext';
+import type { UserContext, UserMessage, UserUpdate } from './UserContext';
 
 interface TextMessage extends UserMessage {
   entities: MessageEntity[];

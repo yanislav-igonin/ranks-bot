@@ -1,13 +1,14 @@
+import type { ChangelogDao } from '../modules/db/dao';
+import type { ChangelogEntity } from '../modules/db/entities';
 import { ChangelogResponse } from '../responses';
-import { ChangelogResponseData } from '../responses/changelog.response';
-import { ChangelogDao } from '../modules/db/dao';
-import { ChangelogEntity } from '../modules/db/entities';
+import type { ChangelogResponseData } from '../responses/changelog.response';
 
 type OperationField = 'added' | 'updated' | 'deleted' | 'assigned' | 'unassigned';
 
-function getLogOperationField(
-  { table, type }: Pick<ChangelogEntity, 'table' | 'type'>,
-): OperationField {
+function getLogOperationField({
+  table,
+  type,
+}: Pick<ChangelogEntity, 'table' | 'type'>): OperationField {
   const tablesOperationsMap = {
     ranks_to_users: {
       insert: 'assigned',
@@ -21,12 +22,8 @@ function getLogOperationField(
     },
   };
 
-  const tableOperations = tablesOperationsMap[
-    table as 'ranks_to_users' | 'ranks'
-  ];
-  const operationField = tableOperations[
-    type as 'update' | 'delete' | 'insert'
-  ];
+  const tableOperations = tablesOperationsMap[table as 'ranks_to_users' | 'ranks'];
+  const operationField = tableOperations[type as 'update' | 'delete' | 'insert'];
 
   return operationField as OperationField;
 }
@@ -46,9 +43,7 @@ export class ChangelogService {
     const rawChangelog = await this.dao.changelog.getChangelogs(); // TODO: вывод ника вместе с изменениями
 
     const changelog = rawChangelog.reduce<ChangelogResponseData>((acc, record) => {
-      const {
-        createdAt, currentValue, previousValue, table, type,
-      } = record;
+      const { createdAt, currentValue, previousValue, table, type } = record;
 
       const day = createdAt.getDate();
       const month = createdAt.getMonth() + 1;

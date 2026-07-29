@@ -1,22 +1,21 @@
-import Telegraf from 'telegraf';
 import * as ngrok from 'ngrok';
+import Telegraf from 'telegraf';
 
 import * as Config from '../../config';
-import { LoggerModule } from '../logger.module';
 import {
-  StartController,
   AddController,
   AssignController,
+  ChangelogController,
   DeleteController,
   HelpController,
   ListController,
+  StartController,
   UnassignController,
   UpdateController,
-  ChangelogController,
 } from '../../controllers';
-
-import { TextContext } from './interfaces/index';
 import { AuthMiddleware } from '../../middlewares';
+import { LoggerModule } from '../logger.module';
+import type { TextContext } from './interfaces/index';
 
 class BotModule {
   private config: typeof Config;
@@ -49,7 +48,8 @@ class BotModule {
     });
     bot.command(['changelog', 'changelog@RanksBot'], ChangelogController);
     bot.on('text', async (ctx): Promise<void> => {
-      if (ctx.update.message.text.toLowerCase().split(' ').includes('да')) { // TODO: переделать в регулярку
+      if (ctx.update.message.text.toLowerCase().split(' ').includes('да')) {
+        // TODO: переделать в регулярку
         await ctx.reply('пизда');
       }
     });
@@ -59,7 +59,6 @@ class BotModule {
       if (AppConfig.env === 'development') {
         host = await ngrok.connect(TelegramConfig.webhook.port);
       } else {
-      // eslint-disable-next-line prefer-destructuring
         host = TelegramConfig.webhook.host;
       }
 
