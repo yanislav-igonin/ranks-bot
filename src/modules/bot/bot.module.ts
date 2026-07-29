@@ -19,6 +19,7 @@ import type { TextContext } from './interfaces/index';
 
 class BotModule {
   private config: typeof Config;
+  private bot?: Telegraf<TextContext>;
 
   constructor(config: typeof Config) {
     this.config = config;
@@ -28,6 +29,7 @@ class BotModule {
     const { AppConfig, TelegramConfig } = this.config;
 
     const bot = new Telegraf<TextContext>(TelegramConfig.token);
+    this.bot = bot;
 
     bot.catch((err): void => {
       LoggerModule.error(`ERROR: ${err}\n`);
@@ -95,6 +97,12 @@ class BotModule {
         );
       }
     }
+  }
+
+  async close(reason = 'application shutdown'): Promise<void> {
+    const bot = this.bot;
+    this.bot = undefined;
+    bot?.stop(reason);
   }
 }
 
