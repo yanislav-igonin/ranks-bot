@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": false,
+    "noEmit": false,
+    "outDir": "dist/server",
+    "rootDir": ".",
+    "types": ["node"]
+  },
+  "include": ["server.ts", "contract.ts"]
+}
