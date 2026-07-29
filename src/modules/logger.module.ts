@@ -9,9 +9,12 @@ const createLogger = () => {
     return 'info';
   };
 
-  return pino({
-    level: logLevel(),
-  });
+  return pino(
+    {
+      level: logLevel(),
+    },
+    pino.transport({ target: 'pino-pretty' }),
+  );
 };
 
 const LoggerModule = createLogger();
