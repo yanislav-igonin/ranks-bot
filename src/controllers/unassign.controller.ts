@@ -4,7 +4,7 @@ import { UnassignService } from '../services';
 
 export const UnassignController = async (ctx: TextContext) => {
   const unassignText = ctx.update.message.text.slice(
-    ctx.update.message.entities[0].length + 1,
+    (ctx.update.message.entities?.[0]?.length ?? 0) + 1,
     ctx.update.message.text.length,
   );
 

@@ -1,8 +1,8 @@
-import type { Middleware } from 'telegraf';
+import type { MiddlewareFn } from 'telegraf';
 import { AppConfig, AuthConfig } from '../config';
 import type { TextContext } from '../modules/bot/interfaces';
 
-export const AuthMiddleware: Middleware<TextContext> = async (ctx, next) => {
+export const AuthMiddleware: MiddlewareFn<TextContext> = async (ctx, next) => {
   if (!AuthConfig.users.includes(ctx.update.message.from.id)) {
     await ctx.reply('Соси бибу, пес');
     return;

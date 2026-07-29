@@ -1,5 +1,5 @@
 import * as ngrok from 'ngrok';
-import Telegraf from 'telegraf';
+import { Telegraf } from 'telegraf';
 
 import * as Config from '../../config';
 import {
@@ -29,7 +29,7 @@ class BotModule {
 
     const bot = new Telegraf<TextContext>(TelegramConfig.token);
 
-    bot.catch((err: Error): void => {
+    bot.catch((err): void => {
       LoggerModule.error(`ERROR: ${err}\n`);
     });
 
@@ -78,7 +78,7 @@ class BotModule {
       }
     } else {
       await bot.telegram.deleteWebhook();
-      bot.startPolling();
+      await bot.launch();
 
       if (AppConfig.env === 'production') {
         await bot.telegram.sendMessage(
