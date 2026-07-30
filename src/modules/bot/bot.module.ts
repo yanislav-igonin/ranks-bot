@@ -90,6 +90,8 @@ class BotModule {
       await bot.telegram.deleteWebhook();
       await bot.launch();
 
+      LoggerModule.info(`bot - online`);
+
       if (AppConfig.env === 'production') {
         await bot.telegram.sendMessage(
           -1001230506485,

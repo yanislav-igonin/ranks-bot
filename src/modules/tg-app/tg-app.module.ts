@@ -236,4 +236,5 @@ export const TgAppModule = createTgAppModule({
     TgAppConfig.staticDirectory ??
     path.resolve(process.cwd(), 'src/tg-app/dist/web'),
   logError: (error) => LoggerModule.error(error),
+  onListening: (port) => LoggerModule.info(`tg-app - online on port ${port}`),
 });
