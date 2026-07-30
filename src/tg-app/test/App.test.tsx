@@ -12,7 +12,19 @@ const initialState: AppState = {
   users: FIXED_USERS,
   assignedByUser: FIXED_USERS.map((user) => ({
     ...user,
-    ranks: user.id === 546166718 ? [{ id: 1, title: 'Стоянов', count: 1 }] : [],
+    ranks:
+      user.id === 546166718
+        ? [
+            {
+              assignmentId: 91,
+              id: 1,
+              title: 'Стоянов',
+              comment: 'Сломал диван на вписке',
+              count: 1,
+              assignedAt: '2026-07-29T11:00:00.000Z',
+            },
+          ]
+        : [],
   })),
 };
 
@@ -24,8 +36,22 @@ const assignedState: AppState = {
     ranks:
       user.id === 546166718
         ? [
-            { id: 1, title: 'Стоянов', count: 1 },
-            { id: 65, title: 'Кукурузный макрогол', count: 1 },
+            {
+              assignmentId: 92,
+              id: 65,
+              title: 'Кукурузный макрогол',
+              comment: 'За лучший подгон',
+              count: 1,
+              assignedAt: '2026-07-29T12:00:00.000Z',
+            },
+            {
+              assignmentId: 91,
+              id: 1,
+              title: 'Стоянов',
+              comment: 'Сломал диван на вписке',
+              count: 1,
+              assignedAt: '2026-07-29T11:00:00.000Z',
+            },
           ]
         : [],
   })),
@@ -34,6 +60,15 @@ const assignedState: AppState = {
 const createApi = (overrides: Partial<ApiClient> = {}): ApiClient => ({
   getState: vi.fn().mockResolvedValue(initialState),
   assign: vi.fn().mockResolvedValue(assignedState),
+  createRank: vi.fn().mockResolvedValue(initialState),
+  deleteRank: vi.fn().mockResolvedValue({
+    ...initialState,
+    availableRanks: [initialState.availableRanks[1]],
+  }),
+  unassign: vi.fn().mockResolvedValue({
+    ...initialState,
+    assignedByUser: FIXED_USERS.map((user) => ({ ...user, ranks: [] })),
+  }),
   ...overrides,
 });
 
@@ -110,6 +145,7 @@ describe('Telegram rank app screens', () => {
     expect(screen.getByText('@hobo_with_a_hookah')).toBeInTheDocument();
     expect(screen.getByText('@ConeConundrum')).toBeInTheDocument();
     expect(screen.getByText('Стоянов')).toBeInTheDocument();
+    expect(screen.getByText(/Сломал диван на вписке/)).toBeInTheDocument();
     expect(screen.getAllByText('Пока пусто')).toHaveLength(2);
   });
 
@@ -152,7 +188,7 @@ describe('rank assignment flow', () => {
     expect(bridge.telegram.backButton.hide).toHaveBeenCalled();
   });
 
-  it('assigns once, gives haptic feedback, and returns to refreshed ranks', async () => {
+  it('confirms recipient and comment before assigning', async () => {
     const api = createApi();
     const bridge = createTelegram();
     render(<App api={api} telegram={bridge.telegram} />);
@@ -163,9 +199,17 @@ describe('rank assignment flow', () => {
       }),
     );
     fireEvent.click(screen.getByRole('button', { name: /Назначить Noeter/ }));
+    expect(api.assign).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole('dialog', { name: 'Подтвердить присвоение' }),
+    ).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Комментарий'), {
+      target: { value: '  За лучший подгон  ' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Подтвердить присвоение' }));
 
     await waitFor(() => {
-      expect(api.assign).toHaveBeenCalledWith(65, 546166718);
+      expect(api.assign).toHaveBeenCalledWith(65, 546166718, 'За лучший подгон');
     });
     expect(await screen.findByText('Звание присвоено')).toBeInTheDocument();
     expect(screen.queryByText('Кукурузный макрогол')).not.toBeInTheDocument();
@@ -192,11 +236,12 @@ describe('rank assignment flow', () => {
     );
     const recipient = screen.getByRole('button', { name: /Назначить Noeter/ });
     fireEvent.click(recipient);
-    fireEvent.click(recipient);
+    fireEvent.click(screen.getByRole('button', { name: 'Подтвердить присвоение' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Подтвердить присвоение' }));
 
-    expect(screen.getAllByRole('button', { name: /Назначить/ })).toEqual(
-      expect.arrayContaining([expect.objectContaining({ disabled: true })]),
-    );
+    expect(
+      screen.getByRole('button', { name: 'Подтвердить присвоение' }),
+    ).toBeDisabled();
     expect(assign).toHaveBeenCalledOnce();
 
     await act(async () => resolveAssignment?.(assignedState));
@@ -221,9 +266,59 @@ describe('rank assignment flow', () => {
       }),
     );
     fireEvent.click(screen.getByRole('button', { name: /Назначить Noeter/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Подтвердить присвоение' }));
 
     expect(await screen.findByText('Звание уже забрали')).toBeInTheDocument();
     expect(screen.getByText('Обугленный')).toBeInTheDocument();
     expect(getState).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('rank management', () => {
+  it('creates a rank from the management screen', async () => {
+    const api = createApi();
+    render(<App api={api} telegram={createTelegram().telegram} />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Управление званиями' }),
+    );
+    fireEvent.change(screen.getByLabelText('Новое звание'), {
+      target: { value: '  Повелитель тапок  ' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Добавить звание' }));
+
+    await waitFor(() => {
+      expect(api.createRank).toHaveBeenCalledWith('Повелитель тапок');
+    });
+    expect(await screen.findByText('Звание добавлено')).toBeInTheDocument();
+  });
+
+  it('confirms and deletes a free rank', async () => {
+    const api = createApi();
+    render(<App api={api} telegram={createTelegram().telegram} />);
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Управление званиями' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Удалить Кукурузный макрогол' }),
+    );
+    expect(screen.getByRole('dialog', { name: 'Удалить звание?' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Удалить навсегда' }));
+
+    await waitFor(() => expect(api.deleteRank).toHaveBeenCalledWith(65));
+  });
+
+  it('confirms and removes an existing assignment', async () => {
+    const api = createApi();
+    render(<App api={api} telegram={createTelegram().telegram} />);
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Присвоенные звания' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Снять звание Стоянов' }));
+    expect(screen.getByRole('dialog', { name: 'Снять звание?' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Снять звание' }));
+
+    await waitFor(() => expect(api.unassign).toHaveBeenCalledWith(91));
+    expect(await screen.findByText('Звание снято')).toBeInTheDocument();
   });
 });

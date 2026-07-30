@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import { AppConfig } from './config';
 import { BotModule, DbModule, LoggerModule, TgAppModule } from './modules';
 
 interface ApplicationModules {
@@ -13,7 +12,7 @@ interface ApplicationModules {
     close(reason?: string): Promise<void>;
   };
   tgApp: {
-    launch(): Promise<void>;
+    launch(): Promise<number>;
     close(): Promise<void>;
   };
 }
@@ -22,11 +21,12 @@ export const launchApplication = async ({
   db,
   bot,
   tgApp,
-}: ApplicationModules): Promise<void> => {
+}: ApplicationModules): Promise<number> => {
   await db.initialize();
   await db.runMigrations();
   try {
-    await Promise.all([bot.launch(), tgApp.launch()]);
+    const [, port] = await Promise.all([bot.launch(), tgApp.launch()]);
+    return port;
   } catch (error) {
     await Promise.allSettled([
       bot.close('startup failure'),
@@ -38,8 +38,6 @@ export const launchApplication = async ({
 };
 
 const main = async (): Promise<void> => {
-  LoggerModule.info({ release: AppConfig.release }, 'release');
-
   let shutdownPromise: Promise<void> | undefined;
   const shutdown = (reason: string): Promise<void> => {
     if (shutdownPromise) return shutdownPromise;
@@ -58,12 +56,12 @@ const main = async (): Promise<void> => {
   process.once('SIGINT', handleSignal);
   process.once('SIGTERM', handleSignal);
 
-  await launchApplication({
+  const port = await launchApplication({
     db: DbModule,
     bot: BotModule,
     tgApp: TgAppModule,
   });
-  LoggerModule.info('bot and Telegram Mini App online');
+  LoggerModule.info({ port }, 'service online');
 };
 
 if (require.main === module) {

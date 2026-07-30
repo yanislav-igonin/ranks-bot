@@ -19,7 +19,14 @@ interface AppState {
   availableRanks: { id: number; title: string }[];
   users: FixedUser[];
   assignedByUser: (FixedUser & {
-    ranks: { id: number; title: string; count: number }[];
+    ranks: {
+      assignmentId: number;
+      id: number;
+      title: string;
+      comment: string;
+      count: number;
+      assignedAt: string;
+    }[];
   })[];
 }
 
@@ -27,18 +34,42 @@ interface AssignRankInput {
   rankId: number;
   recipientId: number;
   actorId: number;
+  comment: string;
+}
+
+interface MutationActor {
+  actorId: number;
 }
 
 export interface TgAppDaoPort {
   getState(): Promise<{
     availableRanks: { id: number; title: string }[];
     assignments: {
+      id: number;
       rank: { id: number; title: string };
       user: { id: number; username: string };
+      comment: string;
       count: number;
+      createdAt: Date;
     }[];
   }>;
-  assignRank(input: AssignRankInput): Promise<void>;
+  assignRank(input: AssignRankInput): Promise<{
+    rank: { id: number; title: string };
+    user: { id: number; username: string };
+  }>;
+  createRank(input: MutationActor & { title: string }): Promise<{
+    id: number;
+    title: string;
+  }>;
+  deleteRank(input: MutationActor & { rankId: number }): Promise<{
+    id: number;
+    title: string;
+  }>;
+  unassignRank(input: MutationActor & { assignmentId: number }): Promise<{
+    id: number;
+    rank: { id: number; title: string };
+    user: { id: number; username: string };
+  }>;
 }
 
 export class TgAppError extends Error {
@@ -72,23 +103,35 @@ const FIXED_USERS: FixedUser[] = [
 ];
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60;
+const MAX_RANK_TITLE_LENGTH = 120;
+const MAX_COMMENT_LENGTH = 500;
+
+interface TgAppNotifier {
+  send(text: string): Promise<void>;
+}
 
 export class TgAppService {
   private readonly dao: TgAppDaoPort;
   private readonly botToken?: string;
   private readonly environment: string;
   private readonly allowedTelegramUserIds: number[];
+  private readonly notifier?: TgAppNotifier;
+  private readonly logError: (error: unknown) => void;
 
   constructor(options: {
     dao: TgAppDaoPort;
     botToken?: string;
     environment: string;
     allowedTelegramUserIds: number[];
+    notifier?: TgAppNotifier;
+    logError?: (error: unknown) => void;
   }) {
     this.dao = options.dao;
     this.botToken = options.botToken;
     this.environment = options.environment;
     this.allowedTelegramUserIds = options.allowedTelegramUserIds;
+    this.notifier = options.notifier;
+    this.logError = options.logError ?? (() => undefined);
   }
 
   authenticate(
@@ -134,16 +177,79 @@ export class TgAppService {
     authorization: string | undefined,
     rankId: number,
     recipientId: number,
+    rawComment: unknown = '',
   ): Promise<AppState> {
-    if (!Number.isInteger(rankId) || rankId <= 0) {
-      throw new TgAppError(400, 'Invalid rank');
-    }
+    this.validatePositiveId(rankId, 'rank');
     if (!FIXED_USERS.some(({ id }) => id === recipientId)) {
       throw new TgAppError(400, 'Invalid recipient');
     }
+    if (typeof rawComment !== 'string') {
+      throw new TgAppError(400, 'Invalid comment');
+    }
+    const comment = rawComment.trim();
+    if (comment.length > MAX_COMMENT_LENGTH) {
+      throw new TgAppError(400, 'Comment is too long');
+    }
 
     const actor = this.authenticate(authorization);
-    await this.dao.assignRank({ rankId, recipientId, actorId: actor.id });
+    const assigned = await this.dao.assignRank({
+      rankId,
+      recipientId,
+      actorId: actor.id,
+      comment,
+    });
+    const commentLine = comment ? `\nКомментарий: ${comment}` : '';
+    await this.publish(
+      `Присвоено звание @${assigned.user.username}: ${assigned.rank.title}, ID - ${assigned.rank.id}${commentLine}`,
+    );
+    return this.loadState();
+  }
+
+  async createRank(
+    authorization: string | undefined,
+    rawTitle: unknown,
+  ): Promise<AppState> {
+    if (typeof rawTitle !== 'string') {
+      throw new TgAppError(400, 'Invalid rank title');
+    }
+    const title = rawTitle.trim();
+    if (!title) {
+      throw new TgAppError(400, 'Rank title is required');
+    }
+    if (title.length > MAX_RANK_TITLE_LENGTH) {
+      throw new TgAppError(400, 'Rank title is too long');
+    }
+
+    const actor = this.authenticate(authorization);
+    const rank = await this.dao.createRank({ title, actorId: actor.id });
+    await this.publish(`Добавлено звание: ${rank.title}, ID - ${rank.id}`);
+    return this.loadState();
+  }
+
+  async deleteRank(
+    authorization: string | undefined,
+    rankId: number,
+  ): Promise<AppState> {
+    this.validatePositiveId(rankId, 'rank');
+    const actor = this.authenticate(authorization);
+    const rank = await this.dao.deleteRank({ rankId, actorId: actor.id });
+    await this.publish(`Удалено звание: ${rank.title}, ID - ${rank.id}`);
+    return this.loadState();
+  }
+
+  async unassign(
+    authorization: string | undefined,
+    assignmentId: number,
+  ): Promise<AppState> {
+    this.validatePositiveId(assignmentId, 'assignment');
+    const actor = this.authenticate(authorization);
+    const assignment = await this.dao.unassignRank({
+      assignmentId,
+      actorId: actor.id,
+    });
+    await this.publish(
+      `Аннулировано звание @${assignment.user.username}: ${assignment.rank.title}, ID - ${assignment.rank.id}`,
+    );
     return this.loadState();
   }
 
@@ -218,12 +324,35 @@ export class TgAppService {
         ...user,
         ranks: state.assignments
           .filter(({ user: assignedUser }) => assignedUser.id === user.id)
-          .map(({ rank, count }) => ({
+          .sort(
+            (left, right) =>
+              right.createdAt.getTime() - left.createdAt.getTime() ||
+              right.id - left.id,
+          )
+          .map(({ id, rank, comment, count, createdAt }) => ({
+            assignmentId: id,
             id: rank.id,
             title: rank.title,
+            comment,
             count,
+            assignedAt: createdAt.toISOString(),
           })),
       })),
     };
+  }
+
+  private validatePositiveId(value: number, name: string): void {
+    if (!Number.isInteger(value) || value <= 0) {
+      throw new TgAppError(400, `Invalid ${name}`);
+    }
+  }
+
+  private async publish(text: string): Promise<void> {
+    if (!this.notifier) return;
+    try {
+      await this.notifier.send(text);
+    } catch (error) {
+      this.logError(error);
+    }
   }
 }

@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import type { AppState, FixedUser, Rank } from '../contract.js';
+import type { AppState, AssignedRank, FixedUser, Rank } from '../contract.js';
 
 export interface ApiClient {
   getState(): Promise<AppState>;
-  assign(rankId: number, userId: number): Promise<AppState>;
+  assign(rankId: number, userId: number, comment: string): Promise<AppState>;
+  createRank(title: string): Promise<AppState>;
+  deleteRank(rankId: number): Promise<AppState>;
+  unassign(assignmentId: number): Promise<AppState>;
 }
 
 export interface TelegramBridge {
@@ -31,8 +34,13 @@ export class ApiError extends Error {
   }
 }
 
-type View = 'list' | 'assign' | 'assigned';
+type View = 'list' | 'assign' | 'assigned' | 'manage';
 type RequestStatus = 'loading' | 'ready' | 'error';
+type Modal =
+  | { type: 'assign'; user: FixedUser }
+  | { type: 'delete-rank'; rank: Rank }
+  | { type: 'unassign'; rank: AssignedRank }
+  | null;
 
 interface AppProps {
   api: ApiClient;
@@ -78,7 +86,10 @@ export const App = ({ api, telegram }: AppProps) => {
   const [data, setData] = useState<AppState | null>(null);
   const [view, setView] = useState<View>('list');
   const [selectedRank, setSelectedRank] = useState<Rank | null>(null);
-  const [isAssigning, setIsAssigning] = useState(false);
+  const [modal, setModal] = useState<Modal>(null);
+  const [comment, setComment] = useState('');
+  const [newRankTitle, setNewRankTitle] = useState('');
+  const [isMutating, setIsMutating] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -112,6 +123,8 @@ export const App = ({ api, telegram }: AppProps) => {
 
   const goHome = useCallback(() => {
     setSelectedRank(null);
+    setModal(null);
+    setComment('');
     setView('list');
   }, []);
 
@@ -136,13 +149,17 @@ export const App = ({ api, telegram }: AppProps) => {
     setView('assign');
   };
 
-  const assign = async (user: FixedUser) => {
-    if (!selectedRank || isAssigning) return;
+  const assign = async () => {
+    if (!selectedRank || modal?.type !== 'assign' || isMutating) return;
 
-    setIsAssigning(true);
+    setIsMutating(true);
     setToast(null);
     try {
-      const nextState = await api.assign(selectedRank.id, user.id);
+      const nextState = await api.assign(
+        selectedRank.id,
+        modal.user.id,
+        comment.trim(),
+      );
       setData(nextState);
       telegram.haptic.notificationOccurred('success');
       setToast('Звание присвоено');
@@ -162,7 +179,61 @@ export const App = ({ api, telegram }: AppProps) => {
         setToast('Не удалось присвоить. Попробуй ещё раз');
       }
     } finally {
-      setIsAssigning(false);
+      setIsMutating(false);
+    }
+  };
+
+  const createRank = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const title = newRankTitle.trim();
+    if (!title || isMutating) return;
+
+    setIsMutating(true);
+    setToast(null);
+    try {
+      setData(await api.createRank(title));
+      setNewRankTitle('');
+      telegram.haptic.notificationOccurred('success');
+      setToast('Звание добавлено');
+    } catch {
+      telegram.haptic.notificationOccurred('error');
+      setToast('Не удалось добавить звание');
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  const deleteRank = async () => {
+    if (modal?.type !== 'delete-rank' || isMutating) return;
+    setIsMutating(true);
+    setToast(null);
+    try {
+      setData(await api.deleteRank(modal.rank.id));
+      setModal(null);
+      telegram.haptic.notificationOccurred('success');
+      setToast('Звание удалено');
+    } catch {
+      telegram.haptic.notificationOccurred('error');
+      setToast('Не удалось удалить звание');
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  const unassign = async () => {
+    if (modal?.type !== 'unassign' || isMutating) return;
+    setIsMutating(true);
+    setToast(null);
+    try {
+      setData(await api.unassign(modal.rank.assignmentId));
+      setModal(null);
+      telegram.haptic.notificationOccurred('success');
+      setToast('Звание снято');
+    } catch {
+      telegram.haptic.notificationOccurred('error');
+      setToast('Не удалось снять звание');
+    } finally {
+      setIsMutating(false);
     }
   };
 
@@ -243,21 +314,37 @@ export const App = ({ api, telegram }: AppProps) => {
           )}
 
           <nav className="bottom-dock" aria-label="Навигация">
-            <button
-              className="dock-button"
-              type="button"
-              aria-label="Присвоенные звания"
-              onClick={() => {
-                telegram.haptic.selectionChanged();
-                setView('assigned');
-              }}
-            >
-              <span className="dock-icon" aria-hidden="true">
-                ≡
-              </span>
-              <span>Присвоенные звания</span>
-              <span className="dock-count">{totalAssigned}</span>
-            </button>
+            <div className="dock-grid">
+              <button
+                className="dock-button"
+                type="button"
+                aria-label="Присвоенные звания"
+                onClick={() => {
+                  telegram.haptic.selectionChanged();
+                  setView('assigned');
+                }}
+              >
+                <span className="dock-icon" aria-hidden="true">
+                  ≡
+                </span>
+                <span>Присвоенные</span>
+                <span className="dock-count">{totalAssigned}</span>
+              </button>
+              <button
+                className="dock-button dock-button-secondary"
+                type="button"
+                aria-label="Управление званиями"
+                onClick={() => {
+                  telegram.haptic.selectionChanged();
+                  setView('manage');
+                }}
+              >
+                <span className="dock-icon" aria-hidden="true">
+                  +
+                </span>
+                <span>Управление</span>
+              </button>
+            </div>
           </nav>
         </section>
       )}
@@ -277,9 +364,12 @@ export const App = ({ api, telegram }: AppProps) => {
                 className="player-row"
                 key={user.id}
                 type="button"
-                disabled={isAssigning}
+                disabled={isMutating}
                 aria-label={`Назначить ${user.displayName}`}
-                onClick={() => void assign(user)}
+                onClick={() => {
+                  setComment('');
+                  setModal({ type: 'assign', user });
+                }}
                 style={{ '--row-delay': `${index * 55}ms` } as React.CSSProperties}
               >
                 <PlayerMark user={user} />
@@ -288,14 +378,14 @@ export const App = ({ api, telegram }: AppProps) => {
                   <span>@{user.username}</span>
                 </span>
                 <span className="player-action" aria-hidden="true">
-                  {isAssigning ? '···' : 'Выбрать'}
+                  Выбрать
                 </span>
               </button>
             ))}
           </div>
 
           <p className="assign-note">
-            Одно нажатие — и звание навсегда уйдёт из свободных.
+            После выбора можно добавить комментарий и подтвердить присвоение.
           </p>
         </section>
       )}
@@ -331,9 +421,24 @@ export const App = ({ api, telegram }: AppProps) => {
                 ) : (
                   <ul className="assigned-list">
                     {user.ranks.map((rank) => (
-                      <li key={`${user.id}-${rank.id}`}>
-                        <span>{rank.title}</span>
-                        {rank.count > 1 && <strong>×{rank.count}</strong>}
+                      <li className="assigned-item" key={rank.assignmentId}>
+                        <div className="assigned-copy">
+                          <span className="assigned-title">
+                            {rank.title}
+                            {rank.count > 1 && <strong>×{rank.count}</strong>}
+                          </span>
+                          {rank.comment && (
+                            <p className="assigned-comment">“{rank.comment}”</p>
+                          )}
+                        </div>
+                        <button
+                          className="icon-button danger-button"
+                          type="button"
+                          aria-label={`Снять звание ${rank.title}`}
+                          onClick={() => setModal({ type: 'unassign', rank })}
+                        >
+                          ×
+                        </button>
                       </li>
                     ))}
                   </ul>
@@ -352,6 +457,177 @@ export const App = ({ api, telegram }: AppProps) => {
             </button>
           </nav>
         </section>
+      )}
+
+      {view === 'manage' && (
+        <section className="screen screen-manage">
+          <AppHeader
+            eyebrow="Мастерская"
+            title="Управление"
+            count={data.availableRanks.length}
+          />
+
+          <form className="create-card" onSubmit={(event) => void createRank(event)}>
+            <label htmlFor="new-rank">Новое звание</label>
+            <div className="create-row">
+              <input
+                id="new-rank"
+                maxLength={120}
+                value={newRankTitle}
+                onChange={(event) => setNewRankTitle(event.target.value)}
+                placeholder="Например, Король опозданий"
+              />
+              <button
+                className="add-button"
+                type="submit"
+                disabled={!newRankTitle.trim() || isMutating}
+                aria-label="Добавить звание"
+              >
+                {isMutating ? '···' : '+'}
+              </button>
+            </div>
+            <p>До 120 символов. После добавления бот напишет в общий чат.</p>
+          </form>
+
+          <div className="manage-heading">
+            <span>Свободные</span>
+            <strong>{data.availableRanks.length}</strong>
+          </div>
+          <div className="manage-list">
+            {data.availableRanks.map((rank, index) => (
+              <article className="manage-row" key={rank.id}>
+                <RankGlyph index={index} />
+                <div>
+                  <strong>{rank.title}</strong>
+                  <span>ID {rank.id}</span>
+                </div>
+                <button
+                  className="icon-button danger-button"
+                  type="button"
+                  aria-label={`Удалить ${rank.title}`}
+                  onClick={() => setModal({ type: 'delete-rank', rank })}
+                >
+                  ×
+                </button>
+              </article>
+            ))}
+          </div>
+
+          <nav className="bottom-dock" aria-label="Навигация">
+            <button className="dock-button" type="button" onClick={goHome}>
+              <span className="dock-icon" aria-hidden="true">
+                ←
+              </span>
+              <span>К розыгрышу</span>
+            </button>
+          </nav>
+        </section>
+      )}
+
+      {modal && (
+        <div className="modal-backdrop">
+          <section
+            className="modal-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+          >
+            <span className="modal-grip" aria-hidden="true" />
+            {modal.type === 'assign' && selectedRank && (
+              <>
+                <p className="eyebrow">Последняя проверка</p>
+                <h2 id="modal-title">Подтвердить присвоение</h2>
+                <p className="modal-copy">
+                  <strong>{selectedRank.title}</strong> получит @
+                  {modal.user.username}
+                </p>
+                <label className="field-label" htmlFor="assignment-comment">
+                  Комментарий
+                </label>
+                <textarea
+                  id="assignment-comment"
+                  maxLength={500}
+                  value={comment}
+                  onChange={(event) => setComment(event.target.value)}
+                  placeholder="Что произошло и почему?"
+                />
+                <span className="character-count">{comment.length}/500</span>
+                <div className="modal-actions">
+                  <button
+                    className="ghost-button"
+                    type="button"
+                    disabled={isMutating}
+                    onClick={() => setModal(null)}
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    className="confirm-button"
+                    type="button"
+                    disabled={isMutating}
+                    onClick={() => void assign()}
+                  >
+                    Подтвердить присвоение
+                  </button>
+                </div>
+              </>
+            )}
+            {modal.type === 'delete-rank' && (
+              <>
+                <p className="eyebrow danger-text">Необратимое действие</p>
+                <h2 id="modal-title">Удалить звание?</h2>
+                <p className="modal-copy">
+                  «{modal.rank.title}» исчезнет из списка. Отменить это нельзя.
+                </p>
+                <div className="modal-actions">
+                  <button
+                    className="ghost-button"
+                    type="button"
+                    disabled={isMutating}
+                    onClick={() => setModal(null)}
+                  >
+                    Оставить
+                  </button>
+                  <button
+                    className="confirm-button confirm-danger"
+                    type="button"
+                    disabled={isMutating}
+                    onClick={() => void deleteRank()}
+                  >
+                    Удалить навсегда
+                  </button>
+                </div>
+              </>
+            )}
+            {modal.type === 'unassign' && (
+              <>
+                <p className="eyebrow danger-text">Откат присвоения</p>
+                <h2 id="modal-title">Снять звание?</h2>
+                <p className="modal-copy">
+                  «{modal.rank.title}» вернётся в свободные звания.
+                </p>
+                <div className="modal-actions">
+                  <button
+                    className="ghost-button"
+                    type="button"
+                    disabled={isMutating}
+                    onClick={() => setModal(null)}
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    className="confirm-button confirm-danger"
+                    type="button"
+                    disabled={isMutating}
+                    onClick={() => void unassign()}
+                  >
+                    Снять звание
+                  </button>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
       )}
 
       {toast && (
